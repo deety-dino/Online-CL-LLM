@@ -511,7 +511,9 @@ def main():
         use_auth_token=True if model_args.use_auth_token else None,
         use_safetensors=True,
         low_cpu_mem_usage=model_args.low_cpu_mem_usage,
-    ).to('cuda')
+        load_in_4bit = True,
+        device_map="auto"
+    )
     
     model.resize_token_embeddings(len(tokenizer))
 
