@@ -212,7 +212,7 @@ previous_lora_path = ""
 # ==========================================
 # Đảm bảo trong câu lệnh sh_str của mnli KHÔNG CÓ tham số --previous_lora_path
 sh_str += rf'''
-python3.10 -u -m deepspeed.launcher.launch --num_gpus=1 --master_port 29500 src/run_llama_new.py \
+python3.10 -u -m deepspeed.launcher.launch --master_port 29500 src/run_llama_new.py \
     --do_train \
     --do_predict \
     --model_name_or_path meta-llama/Llama-2-7b-chat-hf \

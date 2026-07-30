@@ -440,9 +440,10 @@ class LlamaAttention(nn.Module):
                         print(each_q)
                         print(each_ids_w)
                         print(each_ids)
-                        raise ValueError(
-                            f"/0 error"
-                        )
+                        return
+                        #raise ValueError(
+                        #    f"/0 error"
+                        #)
                     self.distribution_q.update(each_q)
                     self.up_q_list.append(each_q)
         if (self.distribution_q is not None) and self.training:
