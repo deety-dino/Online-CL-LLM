@@ -135,7 +135,7 @@ export CUDA_DEVICE_ORDER="PCI_BUS_ID"
 
 port=$(shuf -i25000-30000 -n1)  
 
-deepspeed --num_gpus=8 src/run_llama_new.py \
+deepspeed --num_gpus=2 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
@@ -210,7 +210,7 @@ for idx in range(len(dataset_list)-1):
         
         sh_str+=rf'''
 
-deepspeed --num_gpus=8 src/run_llama_new.py \
+deepspeed --num_gpus=2 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
@@ -268,7 +268,7 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
     else:
         sh_str+=rf'''
 
-deepspeed --num_gpus=8 src/run_llama_new.py \
+deepspeed --num_gpus=2 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
@@ -327,7 +327,7 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
 
 sh_str+=rf'''
 
-deepspeed --num_gpus=8 src/run_llama_new_eval.py \
+deepspeed --num_gpus=2 src/run_llama_new_eval.py \
    --do_predict \
    --predict_with_generate \
    --model_name_or_path {model_path} \
