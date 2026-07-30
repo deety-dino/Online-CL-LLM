@@ -94,7 +94,7 @@ test_top_p=-1.0
 successor='N'
 
 run_name = f"test_llama_7b_long_our_8_1_4_{distances_way}_{distances_temperature}_train_top_{train_top}_test_top_{test_top}_train_top_p_{train_top_p}_test_top_p_{test_top_p}"
-model_path='Llama-2-7b-chat-hf'
+model_path='meta-llama/Llama-2-7b-chat-hf'
 
 history_config=[]
 for one_data_name in dataset_list:

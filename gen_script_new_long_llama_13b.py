@@ -94,7 +94,7 @@ model_size='13b'
 successor='N'
 
 run_name = f"test_llama_{model_size}_long_our_8_1_4_{distances_way}_{distances_temperature}_train_top_{train_top}_test_top_{test_top}_train_top_p_{train_top_p}_test_top_p_{test_top_p}"
-model_path=f'Llama-2-{model_size}-chat-hf'
+model_path=f'meta-llama/Llama-2-{model_size}-chat-hf'
 
 history_config=[]
 for one_data_name in dataset_list:
