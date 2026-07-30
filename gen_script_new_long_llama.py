@@ -103,7 +103,7 @@ test_top_p=-1.0
 
 successor='N'
 
-run_name = f"test_llama_7b_long_our_8_1_4_{distances_way}_{distances_temperature}_train_top_{train_top}_test_top_{test_top}_train_top_p_{train_top_p}_test_top_p_{test_top_p}_kaggle"
+run_name = f"test_llama_7b_long_our_8_1_4_{distances_way}_{distances_temperature}_train_top_{train_top}_test_top_{test_top}_train_top_p_{train_top_p}_test_top_p_{test_top_p}"
 model_path='meta-llama/Llama-2-7b-chat-hf'
 
 history_config=[]
@@ -201,10 +201,82 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
 rm -rf logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]}/checkpoint*
 
 '''
-
+# ==========================================
+# 1. BẮT BUỘC: Reset danh sách đường dẫn về RỖNG trước tiên
+# ==========================================
 previous_lora_path_list = []
+previous_lora_path = ""
+
+# ==========================================
+# 2. TẠO CÂU LỆNH CHO TASK 1 (mnli)
+# ==========================================
+# Đảm bảo trong câu lệnh sh_str của mnli KHÔNG CÓ tham số --previous_lora_path
+sh_str += rf'''
+python3.10 -u -m deepspeed.launcher.launch --master_port 29500 src/run_llama_new.py \
+   --do_train \
+   --do_predict \
+   --predict_with_generate \
+    --model_name_or_path {model_path} \
+    --load_in_4bit True \
+    --previous_lora_path {previous_lora_path} \
+   --previous_lora_distribution_path {previous_lora_path} \
+   --data_dir CL_Benchmark \
+   --task_order {task_order} \
+   --gen_data_dir generated_data/lora_gen_15datasets_t5_xl \
+   --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
+   --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
+   --per_device_train_batch_size {per_device_train_batch_size} \
+   --per_device_eval_batch_size {per_device_eval_batch_size} \
+   --gradient_accumulation_steps {gradient_accumulation_steps} \
+   --max_num_instances_per_task 2000 \
+   --max_num_instances_per_eval_task 100 \
+   --learning_rate {learning_rate} \
+   --attn_lr {attn_lr} \
+   --max_steps {max_steps} \
+   
+   --deepspeed configs/ds_configs/stage2.config \
+   --run_name {run_name} \
+   --distances_temperature {distances_temperature} \
+   --distances_way {distances_way} \
+   --max_source_length 1024 \
+   --max_target_length 50 \
+   --generation_max_length 50 \
+   --add_task_name False \
+   --add_dataset_name False \
+   --overwrite_output_dir \
+   --overwrite_cache \
+   --lr_scheduler_type constant \
+   --warmup_steps 0 \
+   --logging_strategy steps \
+   --logging_steps 10 \
+   --metric_for_best_model eval_exact_match_for_{dataset_list[idx+1]} \
+   --evaluation_strategy steps \
+   --save_strategy steps \
+   --save_total_limit 1 \
+   --load_best_model_at_end \
+   --lora_r {lora_r} \
+   --lora_alpha {lora_alpha} \
+   --lora_dropout {lora_dropout} \
+   --data_replay_freq -1 \
+   --replay_after_n_epoch {replay_after_n_epoch} \
+   --kl_ratio {kl_ratio} \
+   --attn_temperature {attn_temperature} \
+   --train_key_weight_top {train_top} \
+   --test_key_weight_top {test_top} \
+   --train_key_weight_top_p {train_top_p} \
+   --test_key_weight_top_p {test_top_p} \
+   --successor {successor} \
+   --low_cpu_mem_usage True
+'''
+# (Lưu ý: Tuyệt đối KHÔNG cho --previous_lora_path vào đoạn template mnli ở đây)
+
+
+# ==========================================
+# 3. ĐOẠN VÒNG LẶP CỦA BẠN (Dùng cho từ Task 2 - cb trở đi)
+# ==========================================
 for idx in range(len(dataset_list)-1):
 
+    # Thêm weights của task vừa hoàn thành vào danh sách
     previous_lora_path_list.append(f"logs_and_outputs/{run_name}/outputs/{idx+1}-{dataset_list[idx]}/saved_weights")
     previous_lora_path = ','.join(previous_lora_path_list)
     
@@ -222,7 +294,8 @@ for idx in range(len(dataset_list)-1):
         else:
             max_steps = 200
         
-        sh_str+=rf'''
+        # Trong template này MỚI DÙNG --previous_lora_path '{previous_lora_path}'
+        sh_str += rf'''
 
 deepspeed --num_gpus=1 src/run_llama_new.py \
    --do_train \
