@@ -99,7 +99,7 @@ model_path='meta-llama/Llama-2-7b-chat-hf'
 history_config=[]
 for one_data_name in dataset_list:
 
-    pathlib.Path(f'./configs/{run_nam e}_configs/{one_data_name}').mkdir(parents=True, exist_ok=True)
+    pathlib.Path(f'./configs/{run_name}_configs/{one_data_name}').mkdir(parents=True, exist_ok=True)
 
     config={
         "sampling strategy": "full",
