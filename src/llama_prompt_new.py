@@ -474,6 +474,7 @@ class LlamaAttention(nn.Module):
                         print(each_v)
                         print(each_ids_w)
                         print(each_ids)
+                        return
                         raise ValueError(
                             f"/0 error"
                         )
