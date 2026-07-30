@@ -73,15 +73,25 @@ import pathlib
 import numpy as np
 from copy import deepcopy
 
+# Kaggle-friendly defaults: reduce VRAM/RAM usage and training cost.
 lora_r = 4
-lora_alpha = 32
-lora_dropout = 0.
+lora_alpha = 16
+lora_dropout = 0.05
 kl_ratio = 2
 attn_temperature = 1
 learning_rate = 5e-5
-num_train_epochs = 20
+num_train_epochs = 3
 attn_lr = 0.
 replay_after_n_epoch = 0
+
+# Lower memory footprint for 2x15G GPUs / 30GiB RAM.
+max_source_length = 256
+max_target_length = 32
+generation_max_length = 32
+per_device_train_batch_size = 1
+per_device_eval_batch_size = 2
+gradient_accumulation_steps = 8
+gradient_checkpointing = True
 
 
 distances_temperature=1.0
@@ -93,7 +103,7 @@ test_top_p=-1.0
 
 successor='N'
 
-run_name = f"test_llama_7b_long_our_8_1_4_{distances_way}_{distances_temperature}_train_top_{train_top}_test_top_{test_top}_train_top_p_{train_top_p}_test_top_p_{test_top_p}"
+run_name = f"test_llama_7b_long_our_8_1_4_{distances_way}_{distances_temperature}_train_top_{train_top}_test_top_{test_top}_train_top_p_{train_top_p}_test_top_p_{test_top_p}_kaggle"
 model_path='meta-llama/Llama-2-7b-chat-hf'
 
 history_config=[]
@@ -144,9 +154,11 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --task_order {task_order} \
    --task_config_dir configs/{run_name}_configs/{dataset_list[0]} \
    --output_dir logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]} \
-   --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 2 \
-   --gradient_accumulation_steps 4 \
+   --per_device_train_batch_size {per_device_train_batch_size} \
+   --per_device_eval_batch_size {per_device_eval_batch_size} \
+   --gradient_accumulation_steps {gradient_accumulation_steps} \
+   --max_num_instances_per_task 2000 \
+   --max_num_instances_per_eval_task 100 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
@@ -155,9 +167,9 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
-   --max_source_length 512 \
-   --max_target_length 50 \
-   --generation_max_length 50 \
+   --max_source_length {max_source_length} \
+   --max_target_length {max_target_length} \
+   --generation_max_length {generation_max_length} \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
@@ -196,17 +208,17 @@ for idx in range(len(dataset_list)-1):
     
     if dataset_list[idx+1] in ["cb", "copa", "boolq", "imdb", "dbpedia", "multirc"]:
         if dataset_list[idx+1] == "cb":
-            max_steps = 100
+            max_steps = 80
         elif dataset_list[idx+1] == "copa":
-            max_steps = 200
+            max_steps = 120
         elif dataset_list[idx+1] == "boolq":
-            max_steps = 500
-        elif dataset_list[idx+1] == "imdb":
-            max_steps = 250
-        elif dataset_list[idx+1] == "dbpedia":
             max_steps = 200
+        elif dataset_list[idx+1] == "imdb":
+            max_steps = 120
+        elif dataset_list[idx+1] == "dbpedia":
+            max_steps = 100
         else:
-            max_steps = 500
+            max_steps = 200
         
         sh_str+=rf'''
 
@@ -222,9 +234,11 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --gen_data_dir generated_data/lora_gen_15datasets_t5_xl \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
-   --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 8 \
-   --gradient_accumulation_steps 4 \
+   --per_device_train_batch_size {per_device_train_batch_size} \
+   --per_device_eval_batch_size {per_device_eval_batch_size} \
+   --gradient_accumulation_steps {gradient_accumulation_steps} \
+   --max_num_instances_per_task 2000 \
+   --max_num_instances_per_eval_task 100 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --max_steps {max_steps} \
@@ -280,9 +294,11 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --gen_data_dir generated_data/lora_gen_long_llama \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
-   --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 8 \
-   --gradient_accumulation_steps 4 \
+   --per_device_train_batch_size {per_device_train_batch_size} \
+   --per_device_eval_batch_size {per_device_eval_batch_size} \
+   --gradient_accumulation_steps {gradient_accumulation_steps} \
+   --max_num_instances_per_task 2000 \
+   --max_num_instances_per_eval_task 100 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
@@ -338,9 +354,11 @@ deepspeed --num_gpus=2 src/run_llama_new_eval.py \
    --gen_data_dir generated_data/lora_gen_long_llama \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
-   --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 8 \
-   --gradient_accumulation_steps 4 \
+   --per_device_train_batch_size {per_device_train_batch_size} \
+   --per_device_eval_batch_size {per_device_eval_batch_size} \
+   --gradient_accumulation_steps {gradient_accumulation_steps} \
+   --max_num_instances_per_task 2000 \
+   --max_num_instances_per_eval_task 100 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
