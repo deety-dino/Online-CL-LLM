@@ -218,7 +218,7 @@ class ModelArguments:
     )
 
     low_cpu_mem_usage: bool = field(
-        default=False,
+        default=True,
         metadata={"help": "Load the model with low CPU memory usage (useful on Kaggle/limited RAM)."}
     )
 
