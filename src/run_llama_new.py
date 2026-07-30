@@ -28,6 +28,7 @@ from typing import Optional
 import math
 import torch
 
+from transformers import AutoModelForCausalLM, BitsAndBytesConfig
 import pickle
 import datasets
 import nltk  # Here to have a nice missing dependency error message early on
@@ -490,10 +491,15 @@ def main():
         'flash_attention':model_args.flash_attention,
         'successor':model_args.successor
     }
+    bnb_config = BitsAndBytesConfig(
+    load_in_8bit=True,
+    # llm_int8_threshold=6.0  # Ngưỡng xử lý outliers
+    )
 
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         prompt_config,
+        quantization_config=bnb_config,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
         cache_dir=model_args.cache_dir,
