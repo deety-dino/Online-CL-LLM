@@ -149,7 +149,8 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
-   --model_name_or_path {model_path} \
+    --model_name_or_path {model_path} \
+    --load_in_4bit True \
    --data_dir CL_Benchmark \
    --task_order {task_order} \
    --task_config_dir configs/{run_name}_configs/{dataset_list[0]} \
@@ -227,8 +228,9 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
-   --model_name_or_path {model_path} \
-   --previous_lora_path {previous_lora_path} \
+    --model_name_or_path {model_path} \
+    --load_in_4bit True \
+    --previous_lora_path {previous_lora_path} \
    --previous_lora_distribution_path {previous_lora_path} \
    --data_dir CL_Benchmark \
    --task_order {task_order} \
@@ -288,8 +290,9 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
-   --model_name_or_path {model_path} \
-   --previous_lora_path {previous_lora_path} \
+    --model_name_or_path {model_path} \
+    --load_in_4bit True \
+    --previous_lora_path {previous_lora_path} \
    --previous_lora_distribution_path {previous_lora_path} \
    --data_dir CL_Benchmark \
    --task_order {task_order} \
@@ -347,11 +350,12 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
 sh_str+=rf'''
 
 deepspeed --num_gpus=1 src/run_llama_new.py \
-   --do_predict \
-   --predict_with_generate \
-   --model_name_or_path {model_path} \
-   --previous_lora_path {previous_lora_path} \
-   --previous_lora_distribution_path {previous_lora_path} \
+    --do_predict \
+    --predict_with_generate \
+    --model_name_or_path {model_path} \
+    --load_in_4bit True \
+    --previous_lora_path {previous_lora_path} \
+    --previous_lora_distribution_path {previous_lora_path} \
    --data_dir CL_Benchmark \
    --task_order {task_order} \
    --gen_data_dir generated_data/lora_gen_long_llama \
