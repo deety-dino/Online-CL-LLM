@@ -88,12 +88,6 @@ class Trainer(Seq2SeqTrainer):
                         worker_init_fn=seed_worker)
             self.replay_iterator_dict = create_memory_replay_generators(task_order[cur_task_id], task_order, self.replay_dataloader_dict)
 
-    def _move_model_to_device(self, model, device):
-        # Nếu mô hình là 4-bit hoặc 8-bit, bỏ qua bước gọi model.to(device)
-        if getattr(model, "is_loaded_in_4bit", False) or getattr(model, "is_loaded_in_8bit", False):
-            return
-        super()._move_model_to_device(model, device)
-
     def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
         """
         Perform a training step on a batch of inputs.

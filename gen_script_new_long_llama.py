@@ -73,25 +73,15 @@ import pathlib
 import numpy as np
 from copy import deepcopy
 
-# Kaggle-friendly defaults: reduce VRAM/RAM usage and training cost.
 lora_r = 4
-lora_alpha = 16
-lora_dropout = 0.05
+lora_alpha = 32
+lora_dropout = 0.
 kl_ratio = 2
 attn_temperature = 1
 learning_rate = 5e-5
-num_train_epochs = 3
+num_train_epochs = 5
 attn_lr = 0.
 replay_after_n_epoch = 0
-
-# Lower memory footprint for 2x15G GPUs / 30GiB RAM.
-max_source_length = 256
-max_target_length = 32
-generation_max_length = 32
-per_device_train_batch_size = 1
-per_device_eval_batch_size = 2
-gradient_accumulation_steps = 8
-gradient_checkpointing = True
 
 
 distances_temperature=1.0
@@ -149,28 +139,25 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
-    --model_name_or_path {model_path} \
-    --load_in_4bit True \
+   --model_name_or_path {model_path} \
    --data_dir CL_Benchmark \
    --task_order {task_order} \
    --task_config_dir configs/{run_name}_configs/{dataset_list[0]} \
    --output_dir logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]} \
-   --per_device_train_batch_size {per_device_train_batch_size} \
-   --per_device_eval_batch_size {per_device_eval_batch_size} \
-   --gradient_accumulation_steps {gradient_accumulation_steps} \
-   --max_num_instances_per_task 2000 \
-   --max_num_instances_per_eval_task 100 \
+   --per_device_train_batch_size 1 \
+   --per_device_eval_batch_size 8 \
+   --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   
+   --bf16 \
    --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
-   --max_source_length {max_source_length} \
-   --max_target_length {max_target_length} \
-   --generation_max_length {generation_max_length} \
+   --max_source_length 1024 \
+   --max_target_length 50 \
+   --generation_max_length 50 \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
@@ -195,91 +182,53 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --test_key_weight_top {test_top} \
    --train_key_weight_top_p {train_top_p} \
    --test_key_weight_top_p {test_top_p} \
-   --successor {successor} \
-   --low_cpu_mem_usage True
+   --successor {successor}
 
 rm -rf logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]}/checkpoint*
 
 '''
-# ==========================================
-# 1. BẮT BUỘC: Reset danh sách đường dẫn về RỖNG trước tiên
-# ==========================================
+
 previous_lora_path_list = []
-previous_lora_path = ""
-
-# ==========================================
-# 2. TẠO CÂU LỆNH CHO TASK 1 (mnli)
-# ==========================================
-# Đảm bảo trong câu lệnh sh_str của mnli KHÔNG CÓ tham số --previous_lora_path
-sh_str += rf'''
-python3.10 -u -m deepspeed.launcher.launch --master_port 29500 src/run_llama_new.py \
-    --do_train \
-    --do_predict \
-    --model_name_or_path meta-llama/Llama-2-7b-chat-hf \
-    --load_in_4bit True \
-    --data_dir CL_Benchmark \
-    --task_config_dir configs/long_bench/mnli \
-    --output_dir logs_and_outputs/{run_name}/outputs/1-mnli \
-    --deepspeed configs/ds_configs/stage2.config \
-    --max_source_length 256 \
-    --per_device_train_batch_size 1 \
-    --per_device_eval_batch_size 1 \
-    --gradient_accumulation_steps 1 \
-    --max_steps 200 \
-    --learning_rate 5e-4 \
-    --lora_r 4
-'''
-# (Lưu ý: Tuyệt đối KHÔNG cho --previous_lora_path vào đoạn template mnli ở đây)
-
-
-# ==========================================
-# 3. ĐOẠN VÒNG LẶP CỦA BẠN (Dùng cho từ Task 2 - cb trở đi)
-# ==========================================
 for idx in range(len(dataset_list)-1):
 
-    # Thêm weights của task vừa hoàn thành vào danh sách
     previous_lora_path_list.append(f"logs_and_outputs/{run_name}/outputs/{idx+1}-{dataset_list[idx]}/saved_weights")
     previous_lora_path = ','.join(previous_lora_path_list)
     
     if dataset_list[idx+1] in ["cb", "copa", "boolq", "imdb", "dbpedia", "multirc"]:
         if dataset_list[idx+1] == "cb":
-            max_steps = 80
-        elif dataset_list[idx+1] == "copa":
-            max_steps = 120
-        elif dataset_list[idx+1] == "boolq":
-            max_steps = 200
-        elif dataset_list[idx+1] == "imdb":
-            max_steps = 120
-        elif dataset_list[idx+1] == "dbpedia":
             max_steps = 100
-        else:
+        elif dataset_list[idx+1] == "copa":
             max_steps = 200
+        elif dataset_list[idx+1] == "boolq":
+            max_steps = 500
+        elif dataset_list[idx+1] == "imdb":
+            max_steps = 250
+        elif dataset_list[idx+1] == "dbpedia":
+            max_steps = 200
+        else:
+            max_steps = 500
         
-        # Trong template này MỚI DÙNG --previous_lora_path '{previous_lora_path}'
-        sh_str += rf'''
+        sh_str+=rf'''
 
 deepspeed --num_gpus=1 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
-    --model_name_or_path {model_path} \
-    --load_in_4bit True \
-    --previous_lora_path {previous_lora_path} \
+   --model_name_or_path {model_path} \
+   --previous_lora_path {previous_lora_path} \
    --previous_lora_distribution_path {previous_lora_path} \
    --data_dir CL_Benchmark \
    --task_order {task_order} \
    --gen_data_dir generated_data/lora_gen_15datasets_t5_xl \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
-   --per_device_train_batch_size {per_device_train_batch_size} \
-   --per_device_eval_batch_size {per_device_eval_batch_size} \
-   --gradient_accumulation_steps {gradient_accumulation_steps} \
-   --max_num_instances_per_task 2000 \
-   --max_num_instances_per_eval_task 100 \
+   --per_device_train_batch_size 1 \
+   --per_device_eval_batch_size 8 \
+   --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --max_steps {max_steps} \
-   
+   --bf16 \
    --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
@@ -311,8 +260,7 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --test_key_weight_top {test_top} \
    --train_key_weight_top_p {train_top_p} \
    --test_key_weight_top_p {test_top_p} \
-   --successor {successor} \
-   --low_cpu_mem_usage True
+   --successor {successor}
 
 rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpoint*
 
@@ -324,24 +272,21 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
-    --model_name_or_path {model_path} \
-    --load_in_4bit True \
-    --previous_lora_path {previous_lora_path} \
+   --model_name_or_path {model_path} \
+   --previous_lora_path {previous_lora_path} \
    --previous_lora_distribution_path {previous_lora_path} \
    --data_dir CL_Benchmark \
    --task_order {task_order} \
    --gen_data_dir generated_data/lora_gen_long_llama \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
-   --per_device_train_batch_size {per_device_train_batch_size} \
-   --per_device_eval_batch_size {per_device_eval_batch_size} \
-   --gradient_accumulation_steps {gradient_accumulation_steps} \
-   --max_num_instances_per_task 2000 \
-   --max_num_instances_per_eval_task 100 \
+   --per_device_train_batch_size 1 \
+   --per_device_eval_batch_size 8 \
+   --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   
+   --bf16 \
    --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
@@ -373,8 +318,7 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --test_key_weight_top {test_top} \
    --train_key_weight_top_p {train_top_p} \
    --test_key_weight_top_p {test_top_p} \
-   --successor {successor} \
-   --low_cpu_mem_usage True
+   --successor {successor}
 
 rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpoint*
 
@@ -383,27 +327,24 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
 
 sh_str+=rf'''
 
-deepspeed --num_gpus=1 src/run_llama_new.py \
-    --do_predict \
-    --predict_with_generate \
-    --model_name_or_path {model_path} \
-    --load_in_4bit True \
-    --previous_lora_path {previous_lora_path} \
-    --previous_lora_distribution_path {previous_lora_path} \
+deepspeed --num_gpus=1 src/run_llama_new_eval.py \
+   --do_predict \
+   --predict_with_generate \
+   --model_name_or_path {model_path} \
+   --previous_lora_path {previous_lora_path} \
+   --previous_lora_distribution_path {previous_lora_path} \
    --data_dir CL_Benchmark \
    --task_order {task_order} \
    --gen_data_dir generated_data/lora_gen_long_llama \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
-   --per_device_train_batch_size {per_device_train_batch_size} \
-   --per_device_eval_batch_size {per_device_eval_batch_size} \
-   --gradient_accumulation_steps {gradient_accumulation_steps} \
-   --max_num_instances_per_task 2000 \
-   --max_num_instances_per_eval_task 100 \
+   --per_device_train_batch_size 1 \
+   --per_device_eval_batch_size 8 \
+   --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   
+   --bf16 \
    --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
@@ -435,8 +376,7 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --test_key_weight_top {test_top} \
    --train_key_weight_top_p {train_top_p} \
    --test_key_weight_top_p {test_top_p} \
-   --successor {successor} \
-   --low_cpu_mem_usage True
+   --successor {successor}
 '''
     
 with open(f'{run_name}.sh', 'w') as f:
