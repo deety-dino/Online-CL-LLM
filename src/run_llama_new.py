@@ -222,6 +222,11 @@ class ModelArguments:
         metadata={"help": "Load the model with low CPU memory usage (useful on Kaggle/limited RAM)."}
     )
 
+    load_in_4bit: bool = field(
+        default=False,
+        metadata={"help": "Load the model in 4-bit to reduce memory usage."}
+    )
+
     successor: str = field(
         default='N',
         metadata={"help": "Path to load previous distribution"}
