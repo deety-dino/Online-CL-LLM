@@ -194,7 +194,8 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --test_key_weight_top {test_top} \
    --train_key_weight_top_p {train_top_p} \
    --test_key_weight_top_p {test_top_p} \
-   --successor {successor}
+   --successor {successor} \
+   --low_cpu_mem_usage True
 
 rm -rf logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]}/checkpoint*
 
@@ -274,7 +275,8 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --test_key_weight_top {test_top} \
    --train_key_weight_top_p {train_top_p} \
    --test_key_weight_top_p {test_top_p} \
-   --successor {successor}
+   --successor {successor} \
+   --low_cpu_mem_usage True
 
 rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpoint*
 
@@ -334,7 +336,8 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --test_key_weight_top {test_top} \
    --train_key_weight_top_p {train_top_p} \
    --test_key_weight_top_p {test_top_p} \
-   --successor {successor}
+   --successor {successor} \
+   --low_cpu_mem_usage True
 
 rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpoint*
 
@@ -394,7 +397,8 @@ deepspeed --num_gpus=2 src/run_llama_new_eval.py \
    --test_key_weight_top {test_top} \
    --train_key_weight_top_p {train_top_p} \
    --test_key_weight_top_p {test_top_p} \
-   --successor {successor}
+   --successor {successor} \
+   --low_cpu_mem_usage True
 '''
     
 with open(f'{run_name}.sh', 'w') as f:

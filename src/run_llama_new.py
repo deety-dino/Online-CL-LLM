@@ -217,6 +217,11 @@ class ModelArguments:
         metadata={"help": "Path to load previous distribution"}
     )
 
+    low_cpu_mem_usage: bool = field(
+        default=False,
+        metadata={"help": "Load the model with low CPU memory usage (useful on Kaggle/limited RAM)."}
+    )
+
     successor: str = field(
         default='N',
         metadata={"help": "Path to load previous distribution"}
@@ -500,6 +505,7 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
         use_safetensors=True,
+        low_cpu_mem_usage=model_args.low_cpu_mem_usage,
     ).to('cuda')
     
     model.resize_token_embeddings(len(tokenizer))
