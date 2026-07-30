@@ -346,7 +346,7 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
 
 sh_str+=rf'''
 
-deepspeed --num_gpus=1 src/run_llama_new_eval.py \
+deepspeed --num_gpus=1 src/run_llama_new.py \
    --do_predict \
    --predict_with_generate \
    --model_name_or_path {model_path} \
