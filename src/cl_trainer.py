@@ -88,6 +88,20 @@ class Trainer(Seq2SeqTrainer):
                         worker_init_fn=seed_worker)
             self.replay_iterator_dict = create_memory_replay_generators(task_order[cur_task_id], task_order, self.replay_dataloader_dict)
 
+    def _save_checkpoint(self, model, trial, metrics=None):
+        result = None
+        if hasattr(super(), "_save_checkpoint"):
+            result = super()._save_checkpoint(model, trial, metrics=metrics)
+        print("CHECKPOINT MADE")
+        return result
+
+    def _rotate_checkpoints(self, *args, **kwargs):
+        result = None
+        if hasattr(super(), "_rotate_checkpoints"):
+            result = super()._rotate_checkpoints(*args, **kwargs)
+        print("Checkpoint deleted")
+        return result
+
     def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
         """
         Perform a training step on a batch of inputs.
