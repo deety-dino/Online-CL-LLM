@@ -492,8 +492,11 @@ def main():
         'successor':model_args.successor
     }
     bnb_config = BitsAndBytesConfig(
-    load_in_8bit=True,
-    # llm_int8_threshold=6.0  # Ngưỡng xử lý outliers
+        load_in_4bit=True,
+        bnb_4bit_compute_dtype=torch.bfloat16,  # Sửa None -> torch.float16 (dành cho GPU không hỗ trợ bf16)
+        bnb_4bit_quant_type="nf4",              # Sửa "fp4" -> "nf4" (cho độ chính xác cao hơn FP4)
+        bnb_4bit_use_double_quant=True,         # Sửa False -> True (tiết kiệm thêm VRAM)
+        bnb_4bit_quant_storage=None
     )
 
     model = LlamaForCausalLM.from_pretrained(
