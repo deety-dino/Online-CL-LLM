@@ -87,7 +87,6 @@ class Trainer(Seq2SeqTrainer):
                         pin_memory=False,
                         worker_init_fn=seed_worker)
             self.replay_iterator_dict = create_memory_replay_generators(task_order[cur_task_id], task_order, self.replay_dataloader_dict)
-    class Trainer(HFTrainer):  # Tên class Trainer trong cl_trainer.py của bạn
     def _move_model_to_device(self, model, device):
         # Bỏ qua nếu mô hình đã được lượng hóa 4-bit / 8-bit
         if (
