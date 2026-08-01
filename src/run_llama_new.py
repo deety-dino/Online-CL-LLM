@@ -503,6 +503,7 @@ def main():
         prompt_config=prompt_config,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
+        device_map= "auto",
         cache_dir=model_args.cache_dir,
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
@@ -713,6 +714,8 @@ def main():
     training_args.eval_steps = training_args.eval_every_n_epoch * training_args.step_per_epoch
     training_args.save_steps = training_args.eval_every_n_epoch * training_args.step_per_epoch
 
+    model.is_parallelizable = True
+    model.model_parallel = True
     trainer = Trainer(
         model=model,
         args=training_args,
