@@ -79,7 +79,7 @@ lora_dropout = 0.
 kl_ratio = 2
 attn_temperature = 1
 learning_rate = 5e-5
-num_train_epochs = 5
+num_train_epochs = 20
 attn_lr = 0.
 replay_after_n_epoch = 0
 
@@ -145,12 +145,13 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --task_config_dir configs/{run_name}_configs/{dataset_list[0]} \
    --output_dir logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]} \
    --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 2 \
+   --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   
+   --bf16 \
+   --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -222,12 +223,13 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
    --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 2 \
+   --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --max_steps {max_steps} \
-   
+   --bf16 \
+   --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -279,12 +281,13 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
    --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 2 \
+   --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   
+   --bf16 \
+   --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -336,12 +339,13 @@ deepspeed --num_gpus=2 src/run_llama_new_eval.py \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
    --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 2 \
+   --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   
+   --bf16 \
+   --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \

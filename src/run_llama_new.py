@@ -28,7 +28,6 @@ from typing import Optional
 import math
 import torch
 
-from transformers import AutoModelForCausalLM, BitsAndBytesConfig
 import pickle
 import datasets
 import nltk  # Here to have a nice missing dependency error message early on
@@ -492,25 +491,22 @@ def main():
         'successor':model_args.successor
     }
     bnb_config = BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_compute_dtype=torch.bfloat16,  # Sửa None -> torch.float16 (dành cho GPU không hỗ trợ bf16)
-        bnb_4bit_quant_type="nf4",              # Sửa "fp4" -> "nf4" (cho độ chính xác cao hơn FP4)
-        bnb_4bit_use_double_quant=True,         # Sửa False -> True (tiết kiệm thêm VRAM)
-        bnb_4bit_quant_storage=None
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",            # Định dạng NF4 tối ưu cho trọng số LLM
+    bnb_4bit_compute_dtype=torch.float16, # Đơn vị tính toán forward/backward
+    bnb_4bit_use_double_quant=True        # Nén thêm thông tin quantization để giảm VRAM
     )
-
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
+        quantization_config=bnb_config
         prompt_config,
-        device_map={"": int(os.environ.get("LOCAL_RANK", 0))},
-        quantization_config=bnb_config,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
         cache_dir=model_args.cache_dir,
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
         use_safetensors=True,
-    )
+    ).to('cuda')
     
     model.resize_token_embeddings(len(tokenizer))
 
@@ -716,7 +712,6 @@ def main():
     training_args.eval_steps = training_args.eval_every_n_epoch * training_args.step_per_epoch
     training_args.save_steps = training_args.eval_every_n_epoch * training_args.step_per_epoch
 
-    model.is_model_parallel = True
     trainer = Trainer(
         model=model,
         args=training_args,
