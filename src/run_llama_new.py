@@ -716,6 +716,7 @@ def main():
     training_args.eval_steps = training_args.eval_every_n_epoch * training_args.step_per_epoch
     training_args.save_steps = training_args.eval_every_n_epoch * training_args.step_per_epoch
 
+    model.is_model_parallel = True
     trainer = Trainer(
         model=model,
         args=training_args,
