@@ -503,7 +503,7 @@ def main():
         prompt_config=prompt_config,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
-        device_map= device_map={"": int(os.environ.get("LOCAL_RANK", 0))},
+        device_map= {"": local_rank},
         cache_dir=model_args.cache_dir,
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
