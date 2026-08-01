@@ -502,6 +502,7 @@ def main():
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         prompt_config,
+        device_map={"": local_rank},
         quantization_config=bnb_config,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
