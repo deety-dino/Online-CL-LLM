@@ -37,6 +37,7 @@ from datasets import load_dataset
 import copy
 
 import transformers
+from transformers import BitsAndBytesConfig
 from transformers import (
     AutoConfig,
     AutoTokenizer,
