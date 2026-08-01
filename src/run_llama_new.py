@@ -499,14 +499,14 @@ def main():
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         quantization_config=bnb_config,
-        prompt_config,
+        prompt_config=prompt_config,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
         cache_dir=model_args.cache_dir,
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
         use_safetensors=True,
-    ).to('cuda')
+    )
     
     model.resize_token_embeddings(len(tokenizer))
 
