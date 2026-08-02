@@ -69,7 +69,6 @@ fsspec==2023.6.0
 gast==0.5.4
 google-auth==2.23.2
 google-auth-oauthlib==0.4.6
-onnx-graphsurgeon==0.4.6
 greenlet==3.0.1
 grpcio==1.59.0
 h11==0.14.0
