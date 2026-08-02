@@ -36,7 +36,7 @@ cubinlinker-cu11==0.3.0.post2
 cuda-python==12.2.0
 cudf-cu11==23.8.0
 cugraph-cu11==23.8.0
-cuml==23.8.0
+cuml-cu11==23.8.0
 cupy-cuda12x==12.1.0
 cycler==0.12.1
 cymem==2.0.8
