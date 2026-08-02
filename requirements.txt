@@ -183,8 +183,8 @@ pycryptodomex==3.19.0
 pydantic==1.10.13
 pydantic_core==2.10.1
 Pygments==2.16.1
-pylibcugraph==23.8.0
-pylibcugraphops==23.8.0
+pylibcugraph-cu11==23.8.0
+pylibcugraphops-cu11==23.8.0
 pylibraft==23.8.0
 pynvml==11.4.1
 pyparsing==3.1.1
