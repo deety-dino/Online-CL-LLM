@@ -269,7 +269,7 @@ triton==2.1.0
 typer==0.9.0
 types-dataclasses==0.6.6
 typing_extensions==4.8.0
-ucx-py==0.33.0
+ucx-py-cu11==0.33.0
 uff==0.6.9
 urllib3==1.26.16
 uvicorn==0.23.2
