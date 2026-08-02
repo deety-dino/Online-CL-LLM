@@ -136,7 +136,7 @@ nltk==3.8.1
 notebook==6.4.10
 numba==0.57.1
 numpy==1.22.2
-nvfuser==0.0.20
+nvfuser-cu118==0.0.20.dev20231005
 nvidia-dali-cuda120==1.30.0
 nvidia-pyindex==1.0.9
 nvtx==0.2.5
