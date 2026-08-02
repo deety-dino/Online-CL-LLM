@@ -290,8 +290,3 @@ yarl==1.9.2
 zict==3.0.0
 zipp==3.16.2
 
-
-cugraph-dgl-cu11==23.8.0
-cugraph-service-client-cu11==23.8.0
-cugraph-service-server-cu11==23.8.0
-dropout-layer-norm==0.1
