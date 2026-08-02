@@ -274,7 +274,7 @@ uff==0.6.9
 urllib3==1.26.16
 uvicorn==0.23.2
 uvloop==0.19.0
-vllm>=0.2.3
+vllm==0.2.4
 wasabi==1.1.2
 watchfiles==0.21.0
 wcwidth==0.2.8
