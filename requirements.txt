@@ -292,6 +292,6 @@ zipp==3.16.2
 
 
 cugraph-dgl-cu11==23.8.0
-cugraph-service-client==23.8.0
-cugraph-service-server==23.8.0
+cugraph-service-client-cu11==23.8.0
+cugraph-service-server-cu11==23.8.0
 dropout-layer-norm==0.1
