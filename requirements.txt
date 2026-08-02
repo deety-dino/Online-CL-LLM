@@ -36,7 +36,6 @@ cubinlinker-cu11==0.3.0.post2
 cuda-python==12.2.0
 cudf-cu11==23.8.0
 cugraph-cu11==23.8.0
-cugraph-dgl-cu11==23.8.0
 cugraph-service-client==23.8.0
 cugraph-service-server==23.8.0
 cuml==23.8.0
@@ -298,3 +297,6 @@ xxhash==3.4.1
 yarl==1.9.2
 zict==3.0.0
 zipp==3.16.2
+
+
+cugraph-dgl-cu11==23.8.0
