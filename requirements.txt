@@ -95,7 +95,6 @@ jsonschema==4.19.1
 jsonschema-specifications==2023.7.1
 jupyter_client==8.3.1
 jupyter_core==5.3.2
-jupyter-tensorboard==0.2.0
 jupyterlab==2.3.2
 jupyterlab-pygments==0.2.2
 jupyterlab-server==1.2.0
@@ -138,7 +137,6 @@ numba==0.57.1
 numpy==1.22.2
 nvfuser-cu118==0.0.20.dev20231005
 nvidia-dali-cuda120==1.30.0
-nvidia-pyindex==1.0.9
 nvtx==0.2.5
 oauthlib==3.2.2
 onnx==1.14.0
