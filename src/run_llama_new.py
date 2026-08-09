@@ -721,8 +721,8 @@ def main():
                     }) + "\n")
         return result
     print(f"-----Gradient checkpointing: {training_args.gradient_checkpointing} -----")
-    #if training_args.gradient_checkpointing:
-    #    model.gradient_checkpointing_enable()
+    if training_args.gradient_checkpointing:
+        model.gradient_checkpointing_enable()
 
     world_size = int(os.environ.get("WORLD_SIZE", 1))
     training_args.step_per_epoch = math.ceil(len(raw_datasets["train"]) / training_args.per_device_train_batch_size / world_size / training_args.gradient_accumulation_steps)
@@ -753,6 +753,7 @@ def main():
             checkpoint = training_args.resume_from_checkpoint
         elif last_checkpoint is not None:
             checkpoint = last_checkpoint
+        model.gradient_checkpointing_disable()
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
 
         save_path = training_args.output_dir + "/saved_weights"
