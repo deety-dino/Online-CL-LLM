@@ -79,7 +79,7 @@ lora_dropout = 0.
 kl_ratio = 2
 attn_temperature = 1
 learning_rate = 5e-5
-num_train_epochs = 20
+num_train_epochs = 3
 attn_lr = 0.
 replay_after_n_epoch = 0
 
