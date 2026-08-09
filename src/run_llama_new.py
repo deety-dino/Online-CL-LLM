@@ -507,7 +507,6 @@ def main():
         use_auth_token=True if model_args.use_auth_token else None,
         use_safetensors=True,
         torch_dtype="auto",
-        device_map="auto",
     )
     
     model.resize_token_embeddings(len(tokenizer))
