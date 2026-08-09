@@ -28,6 +28,7 @@ from typing import Optional
 import math
 import torch
 
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 import pickle
 import datasets
 import nltk  # Here to have a nice missing dependency error message early on
@@ -508,7 +509,19 @@ def main():
         use_safetensors=True,
         torch_dtype="auto",
     )
-    
+    #Lượng tử hóa
+    model = prepare_model_for_kbit_training(model)
+    peft_config = LoraConfig(
+        r=16,
+        lora_alpha=32,
+        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
+        lora_dropout=0.05,
+        bias="none",
+        task_type="CAUSAL_LM"
+    )
+    model = get_peft_model(model, peft_config)
+    model.print_trainable_parameters()
+        
     model.resize_token_embeddings(len(tokenizer))
 
     if 'llama' in model_args.model_name_or_path.lower():
