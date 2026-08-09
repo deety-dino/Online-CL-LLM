@@ -499,7 +499,7 @@ def main():
     )
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
-        quantization_config=bnb_config,
+        #quantization_config=bnb_config,
         prompt_config=prompt_config,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
