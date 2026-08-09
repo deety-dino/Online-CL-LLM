@@ -107,8 +107,7 @@ nest-asyncio==1.5.8
 ninja==1.11.1.1
 nltk==3.8.1
 notebook==6.4.10
-numba==0.57.1+1.g5fba9aa8f
-nvfuser==0.0.20+gitunknown
+nvfuser==0.0.20
 nvidia-dali-cuda120==1.30.0
 nvidia-pyindex==1.0.9
 nvtx==0.2.5
