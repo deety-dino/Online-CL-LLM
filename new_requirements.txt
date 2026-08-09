@@ -112,7 +112,6 @@ nvidia-pyindex==1.0.9
 nvtx==0.2.5
 oauthlib==3.2.2
 onnx==1.14.0
-opencv==4.7.0
 optimum==1.13.2
 packaging==23.1
 pandas==1.5.3
