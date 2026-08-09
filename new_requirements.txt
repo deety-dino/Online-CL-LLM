@@ -142,7 +142,6 @@ pyasn1-modules==0.3.0
 pybcj==1.0.1
 pybind11==2.11.1
 pybind11-global==2.11.1
-pycocotools==2.0+nv0.7.3
 pycparser==2.21
 pycryptodomex==3.19.0
 pydantic==1.10.13
