@@ -523,7 +523,10 @@ def main():
     model.print_trainable_parameters()
         
     model.resize_token_embeddings(len(tokenizer))
-
+    if getattr(model, "generation_config", None) is None:
+        from transformers import GenerationConfig
+        model.generation_config = GenerationConfig()
+    model.generation_config.bos_token_id = 1
     if 'llama' in model_args.model_name_or_path.lower():
         model.generation_config.bos_token_id = 1
         model.generation_config.eos_token_id = 2
