@@ -201,7 +201,6 @@ termcolor==2.4.0
 terminado==0.17.1
 texttable==1.7.0
 thinc==8.2.1
-thriftpy2==0.4.16
 tinycss2==1.2.1
 toml==0.10.2
 tomli==2.0.1
