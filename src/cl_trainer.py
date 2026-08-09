@@ -139,7 +139,7 @@ class Trainer(Seq2SeqTrainer):
             # loss gets scaled under gradient_accumulation_steps in deepspeed
             self.accelerator.backward(loss)
         else:
-            loss.backward()
+            self.accelerator.backward(loss)
         
         if self.state.global_step > self.args.replay_after_n_epoch*self.args.step_per_epoch and self.args.data_replay_freq != -1 and self.state.global_step % self.args.data_replay_freq == 0:
             for item in self.replay_iterator_dict.keys():
