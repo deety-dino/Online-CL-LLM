@@ -166,10 +166,11 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --logging_strategy steps \
    --logging_steps 10 \
    --metric_for_best_model eval_exact_match \
-   --evaluation_strategy steps \
+   --eval_strategy steps \
    --eval_steps 500 \
-   --save_steps 500\
-
+   --save_strategy steps \
+   --save_steps 500 \
+   --load_best_model_at_end True \
 --eval_steps 500 \
 --save_steps 500\
    --save_strategy steps \
@@ -248,10 +249,11 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --logging_strategy steps \
    --logging_steps 10 \
    --metric_for_best_model eval_exact_match_for_{dataset_list[idx+1]} \
-   --evaluation_strategy steps \
+   --eval_strategy steps \
    --eval_steps 500 \
-   --save_steps 500\
-
+   --save_strategy steps \
+   --save_steps 500 \
+   --load_best_model_at_end True \
    --save_strategy steps \
    --save_total_limit 1 \
    --load_best_model_at_end \
@@ -308,10 +310,11 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --logging_strategy steps \
    --logging_steps 10 \
    --metric_for_best_model eval_exact_match_for_{dataset_list[idx+1]} \
-   --evaluation_strategy steps \
+   --eval_strategy steps \
    --eval_steps 500 \
-   --save_steps 500\
-
+   --save_strategy steps \
+   --save_steps 500 \
+   --load_best_model_at_end True \
    --save_strategy steps \
    --save_total_limit 1 \
    --load_best_model_at_end \
@@ -368,10 +371,11 @@ torchrun --nproc_per_node=2 src/run_llama_new_eval.py \
    --logging_strategy steps \
    --logging_steps 10 \
    --metric_for_best_model eval_exact_match_for_{dataset_list[idx+1]} \
-   --evaluation_strategy steps \
+   --eval_strategy steps \
    --eval_steps 500 \
-   --save_steps 500\
-
+   --save_strategy steps \
+   --save_steps 500 \
+   --load_best_model_at_end True \
    --save_strategy steps \
    --save_total_limit 1 \
    --load_best_model_at_end \
