@@ -10,6 +10,10 @@ from typing import Optional, Any, Union, Dict, List, Tuple
 from cl_collator import SUPPORTED_DECODER_MODELS, check_model
 from cl_dataset import ANSWER_PREFIX
 
+try:
+  from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
+except ImportError:
+  ALL_LAYERNORM_LAYERS = [nn.LayerNorm]
 
 def skip_instructions(model, predictions_ids, tokenizer, ignore_idx=-100):
     predictions_ids = np.where(predictions_ids == ignore_idx, tokenizer.pad_token_id, predictions_ids)
