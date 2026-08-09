@@ -495,7 +495,7 @@ def main():
         'flash_attention':model_args.flash_attention,
         'successor':model_args.successor
     }
-    tensor_quant.QUANT_DESC_WT_INT8.weight_quantizer.num_bits = 8
+    tensor_quant.QUANT_DESC_WEIGHT_INT8.weight_quantizer.num_bits = 8
     tensor_quant.QUANT_DESC_INPUT_INT8.input_quantizer.num_bits = 8
     quant_modules.initialize()
     quant_nn.TensorQuantizer.use_quant_default = True
