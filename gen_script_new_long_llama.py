@@ -94,7 +94,7 @@ test_top_p=-1.0
 successor='N'
 
 run_name = f"test_llama_7b_long_our_8_1_4_{distances_way}_{distances_temperature}_train_top_{train_top}_test_top_{test_top}_train_top_p_{train_top_p}_test_top_p_{test_top_p}"
-model_path='Llama-2-7b-chat-hf'
+model_path='meta-llama/Llama-2-7b-chat-hf'
 
 history_config=[]
 for one_data_name in dataset_list:
@@ -228,7 +228,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --max_steps {max_steps} \
-   --bf16 \
+   --fp16 \
    --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
@@ -286,7 +286,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   --bf16 \
+   --fp16 \
    --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
@@ -344,7 +344,7 @@ deepspeed --num_gpus=2 src/run_llama_new_eval.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   --bf16 \
+   --fp16 \
    --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
