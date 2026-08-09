@@ -5,6 +5,8 @@ from transformers.trainer import *
 from transformers.trainer_callback import TrainerCallback
 import numpy as np
 
+from typing import Optional, Any, Union, Dict, List, Tuple
+
 from cl_collator import SUPPORTED_DECODER_MODELS, check_model
 from cl_dataset import ANSWER_PREFIX
 
