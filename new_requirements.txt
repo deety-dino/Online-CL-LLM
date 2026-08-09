@@ -37,7 +37,6 @@ defusedxml==0.7.1
 dill==0.3.7
 distributed==2023.7.1
 dm-tree==0.1.8
-dropout-layer-norm==0.1
 einops==0.7.0
 execnet==2.0.2
 executing==2.0.0
