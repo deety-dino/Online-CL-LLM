@@ -48,7 +48,7 @@ from transformers import (
 from transformers.trainer_utils import get_last_checkpoint
 from pytorch_quantization import nn as quant_nn
 from pytorch_quantization import quant_modules
-from pytorch_quantization import tensor_quant
+from pytorch_quantization import quant_desc
 
 from cl_collator import DataCollator
 from cl_dataset import gen_cache_path, GaussianDistribution
