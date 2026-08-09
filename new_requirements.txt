@@ -228,7 +228,6 @@ websockets==12.0
 Werkzeug==3.0.0
 wheel==0.41.2
 xdoctest==1.0.2
-xentropy-cuda-lib==0.1
 xgboost==1.7.5
 xxhash==3.4.1
 yarl==1.9.2
