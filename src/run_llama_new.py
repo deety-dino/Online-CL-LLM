@@ -492,10 +492,9 @@ def main():
         'successor':model_args.successor
     }
     bnb_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",            # Định dạng NF4 tối ưu cho trọng số LLM
-    bnb_4bit_compute_dtype=torch.float16, # Đơn vị tính toán forward/backward
-    bnb_4bit_use_double_quant=True        # Nén thêm thông tin quantization để giảm VRAM
+    load_in_8bit=True,
+    llm_int8_threshold=6.0,               # Ngưỡng phát hiện outlier (mặc định 6.0)
+    llm_int8_enable_fp32_cpu_offload=True # Bật tính năng offload sang CPU nếu thiếu VRAM GPU
     )
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
