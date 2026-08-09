@@ -116,6 +116,7 @@ class Trainer(Seq2SeqTrainer):
         Return:
             `torch.Tensor`: The tensor with training loss on this batch.
         """
+        model.gradient_checkpointing_disable()
         model.train()
         
         inputs = self._prepare_inputs(inputs)
