@@ -98,7 +98,7 @@ class Trainer(Seq2SeqTrainer):
         if not hasattr(model, "hf_device_map"):
             super()._move_model_to_device(model, device)
         return
-    def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
+    def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]], *args, **kwargs) -> torch.Tensor:
         """
         Perform a training step on a batch of inputs.
 
