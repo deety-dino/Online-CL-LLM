@@ -48,7 +48,7 @@ from transformers import (
 from transformers.trainer_utils import get_last_checkpoint
 from pytorch_quantization import nn as quant_nn
 from pytorch_quantization import quant_modules
-from pytorch_quantization import tensor_quant
+from pytorch_quantization.tensor_quant import QuantDescriptor
 
 from cl_collator import DataCollator
 from cl_dataset import gen_cache_path, GaussianDistribution
@@ -495,8 +495,8 @@ def main():
         'flash_attention':model_args.flash_attention,
         'successor':model_args.successor
     }
-    tensor_quant.QUANT_DESC_WEIGHT_INT8.weight_quantizer.num_bits = 8
-    tensor_quant.QUANT_DESC_INPUT_INT8.input_quantizer.num_bits = 8
+    desc_input_8bit = QuantDescriptor(num_bits=8)
+    desc_weight_8bit = QuantDescriptor(num_bits=8, axis=0)
     quant_modules.initialize()
     quant_nn.TensorQuantizer.use_quant_default = True
     model = LlamaForCausalLM.from_pretrained(
