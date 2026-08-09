@@ -208,8 +208,8 @@ toml==0.10.2
 tomli==2.0.1
 toolz==0.12.0
 torch-tensorrt==0.0.0
-torchdata==0.7.0a0
-torchtext==0.16.0a0
+torchdata==0.7.0
+torchtext==0.16.0
 tornado==6.3.3
 traitlets==5.9.0
 transformers==4.30.2
