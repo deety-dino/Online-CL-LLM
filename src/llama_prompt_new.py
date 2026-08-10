@@ -432,9 +432,20 @@ class LlamaAttention(nn.Module):
         if (self.distribution_q is not None) and self.training:
             with torch.no_grad():
                 for each_q,each_ids_w,each_ids in zip(all_gpu_hidden_states,all_gpu_input_ids_wo_label,all_gpu_input_ids):
-                    each_q=self.q_proj(each_q.unsqueeze(0)).squeeze(0)
-                    each_q=each_q[(each_ids==1).long().sum():len(each_ids_w)-(each_ids_w==1).long().sum()+(each_ids==1).long().sum()]
-                    each_q=torch.mean(each_q,dim=0)
+                    each_q = self.q_proj(each_q.unsqueeze(0)).squeeze(0
+                    # Trích xuất tensor
+                    start_idx = (each_ids == 1).long().sum()
+                    valid_len = len(each_ids_w) - (each_ids_w == 1).long().sum()
+                    end_idx = start_idx + valid_len
+
+                    valid_each_q = each_q[start_idx:end_idx]
+
+                    # Kiểm tra an toàn: Nếu tensor rỗng, bỏ qua để không phát sinh NaN
+                    if valid_each_q.size(0) > 0:
+                        each_q = torch.mean(valid_each_q, dim=0)
+                    else:
+                        # Nếu không có token hợp lệ, gán bằng zero hoặc một giá trị mặc định để tránh phá hỏng distribution
+                        each_q = torch.zeros_like(each_q[0])
                     if torch.isnan(each_q).any():
                         torch.set_printoptions(edgeitems=1000)
                         print(each_q)
@@ -466,9 +477,18 @@ class LlamaAttention(nn.Module):
         if (self.distribution_v is not None) and self.training:
             with torch.no_grad():
                 for each_v,each_ids_w,each_ids in zip(all_gpu_hidden_states,all_gpu_input_ids_wo_label,all_gpu_input_ids):
-                    each_v=self.v_proj(each_v.unsqueeze(0)).squeeze(0)
-                    each_v=each_v[(each_ids==1).long().sum():len(each_ids_w)-(each_ids_w==1).long().sum()+(each_ids==1).long().sum()]
-                    each_v=torch.mean(each_v,dim=0)
+                    each_v = self.v_proj(each_v.unsqueeze(0)).squeeze(0)
+
+                    start_idx = (each_ids == 1).long().sum()
+                    valid_len = len(each_ids_w) - (each_ids_w == 1).long().sum()
+                    end_idx = start_idx + valid_len
+
+                    valid_each_v = each_v[start_idx:end_idx]
+
+                    if valid_each_v.size(0) > 0:
+                        each_v = torch.mean(valid_each_v, dim=0)
+                    else:
+                        each_v = torch.zeros_like(each_v[0])
                     if torch.isnan(each_v).any():
                         print(each_v)
                         print(each_ids_w)
