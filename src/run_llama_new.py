@@ -29,6 +29,7 @@ import math
 import torch
 
 import pickle
+from transformers import BitsAndBytesConfig
 import datasets
 import nltk  # Here to have a nice missing dependency error message early on
 import numpy as np
@@ -490,7 +491,13 @@ def main():
         'flash_attention':model_args.flash_attention,
         'successor':model_args.successor
     }
-
+    quantization_config = BitsAndBytesConfig(
+        load_in_8bit=True,
+        llm_int8_threshold=6.0,
+        llm_int8_skip_modules=["lm_head"],
+        llm_int8_enable_fp32_cpu_offload=False,
+        llm_int8_has_fp16_weight=False,
+    )
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         prompt_config,
@@ -500,7 +507,7 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
         use_safetensors=True,
-    ).to('cuda')
+    )
     
     model.resize_token_embeddings(len(tokenizer))
 
