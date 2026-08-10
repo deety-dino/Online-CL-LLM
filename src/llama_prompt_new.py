@@ -432,7 +432,7 @@ class LlamaAttention(nn.Module):
         if (self.distribution_q is not None) and self.training:
             with torch.no_grad():
                 for each_q,each_ids_w,each_ids in zip(all_gpu_hidden_states,all_gpu_input_ids_wo_label,all_gpu_input_ids):
-                    each_q = self.q_proj(each_q.unsqueeze(0)).squeeze(0
+                    each_q = self.q_proj(each_q.unsqueeze(0)).squeeze(0)
                     # Trích xuất tensor
                     start_idx = (each_ids == 1).long().sum()
                     valid_len = len(each_ids_w) - (each_ids_w == 1).long().sum()
