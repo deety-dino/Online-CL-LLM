@@ -617,7 +617,7 @@ def main():
         "Total number of parameters: {}M, rate: {}%".format(
             total_params // 1000 / 1000, round(total_params / params * 100, 2)
         )
-    )
+    ) if params > 0 else print("Total number of parameters: {}M".format(total_params // 1000 / 1000))
 
     if (
             hasattr(model.config, "max_position_embeddings")
