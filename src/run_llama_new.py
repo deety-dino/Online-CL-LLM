@@ -45,10 +45,6 @@ from transformers import (
     HfArgumentParser,
     Seq2SeqTrainingArguments,
     set_seed, )
-from transformers.trainer_utils import get_last_checkpoint
-from pytorch_quantization import nn as quant_nn
-from pytorch_quantization import quant_modules
-from pytorch_quantization.tensor_quant import QuantDescriptor
 
 from cl_collator import DataCollator
 from cl_dataset import gen_cache_path, GaussianDistribution
@@ -495,14 +491,16 @@ def main():
         'flash_attention':model_args.flash_attention,
         'successor':model_args.successor
     }
-    desc_input_8bit = QuantDescriptor(num_bits=8)
-    desc_weight_8bit = QuantDescriptor(num_bits=8, axis=0)
-    quant_modules.initialize()
-    quant_nn.TensorQuantizer.use_quant_default = True
+    quantization_config = BitsAndBytesConfig(
+    load_in_8bit=True,
+    llm_int8_threshold=6.0  # Giữ lại các giá trị outliers dạng FP16 để tránh mất độ chính xác
+    )
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         prompt_config=prompt_config,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
+        from_tf=bool(".ckpt" in model_args.model_name_or_path),
+        quantization_config=quantization_config,
         config=config,
         cache_dir=model_args.cache_dir,
         revision=model_args.model_revision,
@@ -513,11 +511,8 @@ def main():
     #Lượng tử hóa
     model = prepare_model_for_kbit_training(model)
     peft_config = LoraConfig(
-        r=16,
-        lora_alpha=32,
-        target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
-        lora_dropout=0.05,
-        bias="none",
+        r=16, lora_alpha=32, 
+        target_modules=["q_proj", "v_proj"], 
         task_type="CAUSAL_LM"
     )
     model = get_peft_model(model, peft_config)

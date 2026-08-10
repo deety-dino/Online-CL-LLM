@@ -73,7 +73,7 @@ import pathlib
 import numpy as np
 from copy import deepcopy
 
-lora_r = 4
+lora_r = 16
 lora_alpha = 32
 lora_dropout = 0.
 kl_ratio = 2
