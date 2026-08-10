@@ -150,7 +150,7 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   --fp16 \
+    
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -233,7 +233,7 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --max_steps {max_steps} \
-   --fp16 \
+    
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -294,7 +294,7 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   --fp16 \
+    
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -355,7 +355,6 @@ torchrun --nproc_per_node=2 src/run_llama_new_eval.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   --fp16 \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
