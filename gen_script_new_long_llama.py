@@ -73,12 +73,12 @@ import pathlib
 import numpy as np
 from copy import deepcopy
 
-lora_r = 16
+lora_r = 4
 lora_alpha = 32
 lora_dropout = 0.
 kl_ratio = 2
 attn_temperature = 1
-learning_rate = 2e-5
+learning_rate = 5e-5
 num_train_epochs = 3
 attn_lr = 0.
 replay_after_n_epoch = 0
@@ -135,7 +135,7 @@ export CUDA_DEVICE_ORDER="PCI_BUS_ID"
 
 port=$(shuf -i25000-30000 -n1)  
 
-torchrun --nproc_per_node=2 src/run_llama_new.py \
+deepspeed --num_gpus=1 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
@@ -144,13 +144,12 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --task_order {task_order} \
    --task_config_dir configs/{run_name}_configs/{dataset_list[0]} \
    --output_dir logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]} \
-   --per_device_train_batch_size 2 \
+   --per_device_train_batch_size 1 \
    --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
-   --num_train_epochs {num_train_epochs} \
-    
+   --num_train_epochs {num_train_epochs} \ 
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -166,13 +165,7 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --logging_strategy steps \
    --logging_steps 10 \
    --metric_for_best_model eval_exact_match \
-   --eval_strategy steps \
-   --eval_steps 500 \
-   --save_strategy steps \
-   --save_steps 500 \
-   --load_best_model_at_end True \
---eval_steps 500 \
---save_steps 500\
+   --evaluation_strategy steps \
    --save_strategy steps \
    --save_total_limit 1 \
    --lora_r {lora_r} \
@@ -215,7 +208,7 @@ for idx in range(len(dataset_list)-1):
         
         sh_str+=rf'''
 
-torchrun --nproc_per_node=2 src/run_llama_new.py \
+deepspeed --num_gpus=1 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
@@ -227,12 +220,13 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --gen_data_dir generated_data/lora_gen_15datasets_t5_xl \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
-   --per_device_train_batch_size 2 \
+   --per_device_train_batch_size 1 \
    --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --max_steps {max_steps} \
+  
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -248,11 +242,7 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --logging_strategy steps \
    --logging_steps 10 \
    --metric_for_best_model eval_exact_match_for_{dataset_list[idx+1]} \
-   --eval_strategy steps \
-   --eval_steps 500 \
-   --save_strategy steps \
-   --save_steps 500 \
-   --load_best_model_at_end True \
+   --evaluation_strategy steps \
    --save_strategy steps \
    --save_total_limit 1 \
    --load_best_model_at_end \
@@ -275,7 +265,7 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
     else:
         sh_str+=rf'''
 
-torchrun --nproc_per_node=2 src/run_llama_new.py \
+deepspeed --num_gpus=1 src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
@@ -287,12 +277,13 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --gen_data_dir generated_data/lora_gen_long_llama \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
-   --per_device_train_batch_size 2 \
+   --per_device_train_batch_size 1 \
    --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
+  
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -308,11 +299,7 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --logging_strategy steps \
    --logging_steps 10 \
    --metric_for_best_model eval_exact_match_for_{dataset_list[idx+1]} \
-   --eval_strategy steps \
-   --eval_steps 500 \
-   --save_strategy steps \
-   --save_steps 500 \
-   --load_best_model_at_end True \
+   --evaluation_strategy steps \
    --save_strategy steps \
    --save_total_limit 1 \
    --load_best_model_at_end \
@@ -336,7 +323,7 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
 
 sh_str+=rf'''
 
-torchrun --nproc_per_node=2 src/run_llama_new_eval.py \
+deepspeed --num_gpus=1 src/run_llama_new_eval.py \
    --do_predict \
    --predict_with_generate \
    --model_name_or_path {model_path} \
@@ -353,6 +340,7 @@ torchrun --nproc_per_node=2 src/run_llama_new_eval.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
+  
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -368,11 +356,7 @@ torchrun --nproc_per_node=2 src/run_llama_new_eval.py \
    --logging_strategy steps \
    --logging_steps 10 \
    --metric_for_best_model eval_exact_match_for_{dataset_list[idx+1]} \
-   --eval_strategy steps \
-   --eval_steps 500 \
-   --save_strategy steps \
-   --save_steps 500 \
-   --load_best_model_at_end True \
+   --evaluation_strategy steps \
    --save_strategy steps \
    --save_total_limit 1 \
    --load_best_model_at_end \

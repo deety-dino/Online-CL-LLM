@@ -5,15 +5,9 @@ from transformers.trainer import *
 from transformers.trainer_callback import TrainerCallback
 import numpy as np
 
-from typing import Optional, Any, Union, Dict, List, Tuple
-
 from cl_collator import SUPPORTED_DECODER_MODELS, check_model
 from cl_dataset import ANSWER_PREFIX
 
-try:
-  from transformers.pytorch_utils import ALL_LAYERNORM_LAYERS
-except ImportError:
-  ALL_LAYERNORM_LAYERS = [nn.LayerNorm]
 
 def skip_instructions(model, predictions_ids, tokenizer, ignore_idx=-100):
     predictions_ids = np.where(predictions_ids == ignore_idx, tokenizer.pad_token_id, predictions_ids)
@@ -94,11 +88,7 @@ class Trainer(Seq2SeqTrainer):
                         worker_init_fn=seed_worker)
             self.replay_iterator_dict = create_memory_replay_generators(task_order[cur_task_id], task_order, self.replay_dataloader_dict)
 
-    def _move_model_to_device(self, model, device):
-        if not hasattr(model, "hf_device_map"):
-            super()._move_model_to_device(model, device)
-        return
-    def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]], *args, **kwargs) -> torch.Tensor:
+    def training_step(self, model: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]]) -> torch.Tensor:
         """
         Perform a training step on a batch of inputs.
 
@@ -134,7 +124,16 @@ class Trainer(Seq2SeqTrainer):
             # deepspeed handles loss scaling by gradient_accumulation_steps in its `backward`
             loss = loss / self.args.gradient_accumulation_steps
         
-        self.accelerator.backward(loss)
+        if self.do_grad_scaling:
+            self.scaler.scale(loss).backward()
+        elif self.use_apex:
+            with amp.scale_loss(loss, self.optimizer) as scaled_loss:
+                scaled_loss.backward()
+        elif self.is_deepspeed_enabled:
+            # loss gets scaled under gradient_accumulation_steps in deepspeed
+            self.accelerator.backward(loss)
+        else:
+            loss.backward()
         
         if self.state.global_step > self.args.replay_after_n_epoch*self.args.step_per_epoch and self.args.data_replay_freq != -1 and self.state.global_step % self.args.data_replay_freq == 0:
             for item in self.replay_iterator_dict.keys():
@@ -158,7 +157,7 @@ class Trainer(Seq2SeqTrainer):
                 if self.args.n_gpu > 1:
                     kl_loss = kl_loss.mean()  # mean() to average on multi-gpu parallel trainin
         
-                if self.accelerator.scaler is not None:
+                if self.do_grad_scaling:
                     self.scaler.scale(kl_loss).backward()
                 elif self.use_apex:
                     with amp.scale_loss(kl_loss, self.optimizer) as scaled_loss:
@@ -243,7 +242,7 @@ class Trainer(Seq2SeqTrainer):
 
             optimizer_cls, optimizer_kwargs = Trainer.get_optimizer_cls_and_kwargs(self.args)
 
-            if str(getattr(self, "sharded_ddp", False)).lower() in ["simple","shardedddpoption.simple",]:
+            if self.sharded_ddp == ShardedDDPOption.SIMPLE:
                 self.optimizer = OSS(
                     params=optimizer_grouped_parameters,
                     optim=optimizer_cls,

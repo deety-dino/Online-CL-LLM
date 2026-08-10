@@ -31,7 +31,7 @@ from transformers.modeling_outputs import BaseModelOutputWithPast, CausalLMOutpu
 from transformers.modeling_utils import PreTrainedModel
 from transformers.utils import add_start_docstrings, add_start_docstrings_to_model_forward, logging, replace_return_docstrings
 from transformers.models.llama.configuration_llama import LlamaConfig
-from transformers import BitsAndBytesConfig
+
 import torch.distributed as dist
 import torch.multiprocessing as mp
 
@@ -432,14 +432,7 @@ class LlamaAttention(nn.Module):
         if (self.distribution_q is not None) and self.training:
             with torch.no_grad():
                 for each_q,each_ids_w,each_ids in zip(all_gpu_hidden_states,all_gpu_input_ids_wo_label,all_gpu_input_ids):
-                    original_dtype = each_q.dtype
-                    # Ép sang float32 trước khi qua lớp tuyến tính để tránh tràn số
-                    each_q_safe = each_q.to(torch.float32)
-
-                    # Đi qua q_proj và trả lại kiểu dữ liệu gốc
-                    each_q = self.q_proj(each_q_safe.unsqueeze(0)).squeeze(0)
-                    each_q = each_q.to(original_dtype)
-                    
+                    each_q=self.q_proj(each_q.unsqueeze(0)).squeeze(0)
                     each_q=each_q[(each_ids==1).long().sum():len(each_ids_w)-(each_ids_w==1).long().sum()+(each_ids==1).long().sum()]
                     each_q=torch.mean(each_q,dim=0)
                     if torch.isnan(each_q).any():
@@ -473,14 +466,7 @@ class LlamaAttention(nn.Module):
         if (self.distribution_v is not None) and self.training:
             with torch.no_grad():
                 for each_v,each_ids_w,each_ids in zip(all_gpu_hidden_states,all_gpu_input_ids_wo_label,all_gpu_input_ids):
-                    original_dtype = each_v.dtype
-                    # Ép sang float32 trước khi qua lớp tuyến tính để tránh tràn số
-                    each_v_safe = each_v.to(torch.float32)
-
-                    # Đi qua v_proj và trả lại kiểu dữ liệu gốc
-                    each_v = self.v_proj(each_v_safe.unsqueeze(0)).squeeze(0)
-                    each_v = each_v.to(original_dtype)
-
+                    each_v=self.v_proj(each_v.unsqueeze(0)).squeeze(0)
                     each_v=each_v[(each_ids==1).long().sum():len(each_ids_w)-(each_ids_w==1).long().sum()+(each_ids==1).long().sum()]
                     each_v=torch.mean(each_v,dim=0)
                     if torch.isnan(each_v).any():

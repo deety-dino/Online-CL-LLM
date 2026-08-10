@@ -2,7 +2,7 @@ import logging
 
 import torch
 from transformers.data.data_collator import *
-from typing import Optional, Any, Union
+
 
 logger = logging.getLogger(__name__)
 

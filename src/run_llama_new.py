@@ -28,31 +28,23 @@ from typing import Optional
 import math
 import torch
 
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 import pickle
 import datasets
 import nltk  # Here to have a nice missing dependency error message early on
 import numpy as np
 import pickle
 from datasets import load_dataset
-from transformers.trainer_utils import get_last_checkpoint
-
 import copy
 
 import transformers
-from transformers import BitsAndBytesConfig
 from transformers import (
     AutoConfig,
     AutoTokenizer,
     HfArgumentParser,
     Seq2SeqTrainingArguments,
     set_seed, )
-import warnings
-warnings.filterwarnings("ignore")
+from transformers.trainer_utils import get_last_checkpoint
 
-import logging
-logging.getLogger("transformers").setLevel(logging.ERROR)
-logging.getLogger("bitsandbytes").setLevel(logging.ERROR)
 from cl_collator import DataCollator
 from cl_dataset import gen_cache_path, GaussianDistribution
 from llama_prompt_new import LlamaForCausalLM
@@ -498,37 +490,20 @@ def main():
         'flash_attention':model_args.flash_attention,
         'successor':model_args.successor
     }
-    quantization_config = BitsAndBytesConfig(
-    load_in_8bit=True,
-    llm_int8_threshold=6.0  # Giữ lại các giá trị outliers dạng FP16 để tránh mất độ chính xác
-    )
+
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
-        prompt_config=prompt_config,
+        prompt_config,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
-        quantization_config=quantization_config,
         config=config,
         cache_dir=model_args.cache_dir,
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
         use_safetensors=True,
-        torch_dtype="auto",
-    )
-    #Lượng tử hóa
-    model = prepare_model_for_kbit_training(model)
-    peft_config = LoraConfig(
-        r=16, lora_alpha=32, 
-        target_modules=["q_proj", "v_proj"], 
-        task_type="CAUSAL_LM"
-    )
-    model = get_peft_model(model, peft_config)
-    model.print_trainable_parameters()
-        
+    ).to('cuda')
+    
     model.resize_token_embeddings(len(tokenizer))
-    if getattr(model, "generation_config", None) is None:
-        from transformers import GenerationConfig
-        model.generation_config = GenerationConfig()
-    model.generation_config.bos_token_id = 1
+
     if 'llama' in model_args.model_name_or_path.lower():
         model.generation_config.bos_token_id = 1
         model.generation_config.eos_token_id = 2
@@ -731,8 +706,6 @@ def main():
     training_args.eval_steps = training_args.eval_every_n_epoch * training_args.step_per_epoch
     training_args.save_steps = training_args.eval_every_n_epoch * training_args.step_per_epoch
 
-    model.is_parallelizable = True
-    model.model_parallel = True
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -755,7 +728,6 @@ def main():
             checkpoint = training_args.resume_from_checkpoint
         elif last_checkpoint is not None:
             checkpoint = last_checkpoint
-        model.gradient_checkpointing_disable()
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
 
         save_path = training_args.output_dir + "/saved_weights"
