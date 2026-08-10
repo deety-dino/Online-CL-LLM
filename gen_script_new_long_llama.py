@@ -149,7 +149,7 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
-   --num_train_epochs {num_train_epochs} \ 
+   --num_train_epochs {num_train_epochs} \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -226,7 +226,6 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --max_steps {max_steps} \
-  
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -283,7 +282,6 @@ deepspeed --num_gpus=1 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-  
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
@@ -340,7 +338,6 @@ deepspeed --num_gpus=1 src/run_llama_new_eval.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-  
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
