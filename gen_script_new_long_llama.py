@@ -78,7 +78,7 @@ lora_alpha = 32
 lora_dropout = 0.
 kl_ratio = 2
 attn_temperature = 1
-learning_rate = 5e-5
+learning_rate = 1e-5
 num_train_epochs = 3
 attn_lr = 0.
 replay_after_n_epoch = 0
@@ -144,7 +144,7 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --task_order {task_order} \
    --task_config_dir configs/{run_name}_configs/{dataset_list[0]} \
    --output_dir logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]} \
-   --per_device_train_batch_size 1 \
+   --per_device_train_batch_size 2 \
    --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
@@ -227,7 +227,7 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --gen_data_dir generated_data/lora_gen_15datasets_t5_xl \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
-   --per_device_train_batch_size 1 \
+   --per_device_train_batch_size 2 \
    --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
@@ -288,7 +288,7 @@ torchrun --nproc_per_node=2 src/run_llama_new.py \
    --gen_data_dir generated_data/lora_gen_long_llama \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
-   --per_device_train_batch_size 1 \
+   --per_device_train_batch_size 2 \
    --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
