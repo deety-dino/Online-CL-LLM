@@ -134,7 +134,7 @@ class Trainer(Seq2SeqTrainer):
             # deepspeed handles loss scaling by gradient_accumulation_steps in its `backward`
             loss = loss / self.args.gradient_accumulation_steps
         
-        if getattr(self, "do_grad_scaling", False):
+        if self.accelerator.scaler is not None:
             self.scaler.scale(loss).backward()
         elif self.use_apex:
             with amp.scale_loss(loss, self.optimizer) as scaled_loss:
@@ -167,7 +167,7 @@ class Trainer(Seq2SeqTrainer):
                 if self.args.n_gpu > 1:
                     kl_loss = kl_loss.mean()  # mean() to average on multi-gpu parallel trainin
         
-                if getattr(self, "do_grad_scaling", False):
+                if self.accelerator.scaler is not None:
                     self.scaler.scale(kl_loss).backward()
                 elif self.use_apex:
                     with amp.scale_loss(kl_loss, self.optimizer) as scaled_loss:
