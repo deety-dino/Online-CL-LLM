@@ -35,6 +35,8 @@ import nltk  # Here to have a nice missing dependency error message early on
 import numpy as np
 import pickle
 from datasets import load_dataset
+from transformers.trainer_utils import get_last_checkpoint
+
 import copy
 
 import transformers
