@@ -303,11 +303,12 @@ class Trainer(Seq2SeqTrainer):
 
         # if full fp16 or bf16 eval is wanted and this ``evaluation`` or ``predict`` isn't called
         # while ``train`` is running, cast it to the right dtype first and then put on device
-        # if not self.is_in_train:
-        #     if args.fp16_full_eval:
-        #         model = model.to(dtype=torch.float16, device=args.device)
-        #     elif args.bf16_full_eval:
-        model = model.to(dtype=torch.float16, device=args.device)
+        if not self.is_in_train:
+            if getattr(args, "fp16_full_eval", False):
+                model = model.to(dtype=torch.float16, device=args.device)
+            elif getattr(args, "bf16_full_eval", False) and torch.cuda.is_bf16_supported():
+                model = model.to(dtype=torch.bfloat16, device=args.device)
+        #model = model.to(dtype=torch.bfloat16, device=args.device)
 
         batch_size = dataloader.batch_size
 
