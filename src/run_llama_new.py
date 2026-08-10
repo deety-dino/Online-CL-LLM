@@ -45,7 +45,12 @@ from transformers import (
     HfArgumentParser,
     Seq2SeqTrainingArguments,
     set_seed, )
+import warnings
+warnings.filterwarnings("ignore")
 
+import logging
+logging.getLogger("transformers").setLevel(logging.ERROR)
+logging.getLogger("bitsandbytes").setLevel(logging.ERROR)
 from cl_collator import DataCollator
 from cl_dataset import gen_cache_path, GaussianDistribution
 from llama_prompt_new import LlamaForCausalLM
