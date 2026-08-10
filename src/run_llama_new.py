@@ -499,7 +499,6 @@ def main():
         model_args.model_name_or_path,
         prompt_config=prompt_config,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
-        from_tf=bool(".ckpt" in model_args.model_name_or_path),
         quantization_config=quantization_config,
         config=config,
         cache_dir=model_args.cache_dir,
