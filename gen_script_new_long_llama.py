@@ -78,8 +78,8 @@ lora_alpha = 32
 lora_dropout = 0.
 kl_ratio = 2
 attn_temperature = 1
-learning_rate = 5e-5
-num_train_epochs = 3
+learning_rate = 2e-5
+num_train_epochs = 0.5
 attn_lr = 0.
 replay_after_n_epoch = 0
 
@@ -327,7 +327,7 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
 
 sh_str+=rf'''
 
-deepspeed --num_gpus=2 src/run_llama_new_eval.py \
+deepspeed --num_gpus=2 src/run_llama_new.py \
    --do_predict \
    --predict_with_generate \
    --model_name_or_path {model_path} \

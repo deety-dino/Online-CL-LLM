@@ -533,6 +533,8 @@ class Trainer(Seq2SeqTrainer):
             generation_inputs = inputs[self.model.main_input_name]
 
             if inputs.get("input_ids_wo_label", None) is not None:
+                if self.args.fp16:
+                    self.model = self.model.half()
                 generated_tokens = self.model.generate(
                     input_ids=generation_inputs,
                     input_ids_wo_label=inputs["input_ids_wo_label"],
