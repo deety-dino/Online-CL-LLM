@@ -114,6 +114,7 @@ class LoRALayer(nn.Module):
         nn.init.zeros_(self.lora_B)
     
     def forward(self, x: torch.Tensor):
+        x = x.to(self.lora_A.dtype)
         result = (self.lora_dropout(x) @ self.lora_A.transpose(0, 1) @ self.lora_B.transpose(0, 1)) * self.scaling
         return result.reshape(x.shape[0], -1, self.out_features)
 
