@@ -1,4 +1,9 @@
 import json
+import os
+import pathlib
+import numpy as np
+from copy import deepcopy
+
 def load_json(path):
     with open(path, 'r', encoding='utf-8') as f:
         data = json.load(f)
@@ -68,11 +73,6 @@ config_template={
     ],
 }
 
-import os
-import pathlib
-import numpy as np
-from copy import deepcopy
-
 lora_r = 4
 lora_alpha = 32
 lora_dropout = 0.
@@ -82,7 +82,6 @@ learning_rate = 2e-5
 num_train_epochs = 0.5
 attn_lr = 0.
 replay_after_n_epoch = 0
-
 
 distances_temperature=1.0
 distances_way='Attention'
@@ -155,13 +154,13 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
-   --max_source_length 512\
+   --max_source_length 512 \
    --max_target_length 50 \
    --generation_max_length 50 \
    --add_task_name False \
    --add_dataset_name False \
-   --overwrite_output_dir \
    --overwrite_cache \
+   --resume_from_checkpoint True \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
    --logging_strategy steps \
@@ -184,8 +183,8 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --test_key_weight_top_p {test_top_p} \
    --successor {successor}
 
-rm -rf logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]}/checkpoint*
-
+# Lệnh xóa checkpoint đã được vô hiệu hóa để có thể chạy tiếp khi resume
+# rm -rf logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]}/checkpoint*
 '''
 
 previous_lora_path_list = []
@@ -233,13 +232,13 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
-   --max_source_length 512\
+   --max_source_length 512 \
    --max_target_length 50 \
    --generation_max_length 50 \
    --add_task_name False \
    --add_dataset_name False \
-   --overwrite_output_dir \
    --overwrite_cache \
+   --resume_from_checkpoint True \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
    --logging_strategy steps \
@@ -262,8 +261,8 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --test_key_weight_top_p {test_top_p} \
    --successor {successor}
 
-rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpoint*
-
+# Lệnh xóa checkpoint đã được vô hiệu hóa
+# rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpoint*
 '''
     else:
         sh_str+=rf'''
@@ -291,13 +290,13 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
-   --max_source_length 512\
+   --max_source_length 512 \
    --max_target_length 50 \
    --generation_max_length 50 \
    --add_task_name False \
    --add_dataset_name False \
-   --overwrite_output_dir \
    --overwrite_cache \
+   --resume_from_checkpoint True \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
    --logging_strategy steps \
@@ -320,10 +319,9 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --test_key_weight_top_p {test_top_p} \
    --successor {successor}
 
-rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpoint*
-
+# Lệnh xóa checkpoint đã được vô hiệu hóa
+# rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpoint*
 '''
-
 
 sh_str+=rf'''
 
@@ -349,12 +347,11 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
-   --max_source_length 512\
+   --max_source_length 512 \
    --max_target_length 50 \
    --generation_max_length 50 \
    --add_task_name False \
    --add_dataset_name False \
-   --overwrite_output_dir \
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
