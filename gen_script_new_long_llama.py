@@ -172,7 +172,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
-   --resume_from_checkpoint True \
+    
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
@@ -231,7 +231,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
-   --resume_from_checkpoint True \
+    
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
@@ -290,7 +290,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
-   --resume_from_checkpoint True \
+    
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
