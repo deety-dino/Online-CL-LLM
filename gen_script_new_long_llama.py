@@ -119,75 +119,7 @@ for one_data_name in dataset_list:
     test_config['Long_Sequence'].extend(history_config)
     write_json(f'./configs/{run_name}_configs/{one_data_name}/test_tasks.json', test_config)
 
-sh_str=rf'''
-#!/bin/bash
-#SBATCH -J cl                           
-#SBATCH -o cl-%j.out                       
-#SBATCH -p compute 
-#SBATCH -N 1                           
-#SBATCH -t 20:00:00   
-#SBATCH --mem 128G 
-#SBATCH --gres=gpu:a100-sxm4-80gb:1
 
-fuser -k /dev/nvidia*
-
-export CUDA_DEVICE_ORDER="PCI_BUS_ID"
-
-port=$(shuf -i25000-30000 -n1)  
-
-deepspeed --num_gpus=2 src/run_llama_new.py \
-   --do_train \
-   --do_predict \
-   --predict_with_generate \
-   --model_name_or_path {model_path} \
-   --data_dir CL_Benchmark \
-   --task_order {task_order} \
-   --task_config_dir configs/{run_name}_configs/{dataset_list[0]} \
-   --output_dir logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]} \
-   --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 8 \
-   --gradient_accumulation_steps 4 \
-   --learning_rate {learning_rate} \
-   --attn_lr {attn_lr} \
-   --num_train_epochs {num_train_epochs} \
-   --fp16 \
-   --deepspeed configs/ds_configs/stage3.config \
-   --run_name {run_name} \
-   --distances_temperature {distances_temperature} \
-   --distances_way {distances_way} \
-   --max_source_length 512\
-   --max_target_length 50 \
-   --generation_max_length 50 \
-   --add_task_name False \
-   --add_dataset_name False \
-   --overwrite_output_dir \
-   --resume_from_checkpoint True \
-   --overwrite_cache \
-   --lr_scheduler_type constant \
-   --warmup_steps 0 \
-   --logging_strategy steps \
-   --logging_steps 10 \
-   --metric_for_best_model eval_exact_match \
-   --evaluation_strategy steps \
-   --save_strategy steps \
-   --save_total_limit 1 \
-   --lora_r {lora_r} \
-   --lora_alpha {lora_alpha} \
-   --lora_dropout {lora_dropout} \
-   --load_best_model_at_end \
-   --data_replay_freq -1 \
-   --replay_after_n_epoch 0 \
-   --kl_ratio {kl_ratio} \
-   --attn_temperature {attn_temperature} \
-   --train_key_weight_top {train_top} \
-   --test_key_weight_top {test_top} \
-   --train_key_weight_top_p {train_top_p} \
-   --test_key_weight_top_p {test_top_p} \
-   --successor {successor}
-
-rm -rf logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]}/checkpoint*
-
-'''
 
 previous_lora_path_list = []
 for idx in range(len(dataset_list)-1):
@@ -240,7 +172,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
-   --resume_from_checkpoint True \
+   
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
@@ -299,7 +231,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
-   --resume_from_checkpoint True \
+   
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
@@ -358,7 +290,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
-   --resume_from_checkpoint True \
+   
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
