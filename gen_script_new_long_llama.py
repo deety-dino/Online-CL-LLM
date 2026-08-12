@@ -119,7 +119,7 @@ for one_data_name in dataset_list:
     test_config['Long_Sequence'].extend(history_config)
     write_json(f'./configs/{run_name}_configs/{one_data_name}/test_tasks.json', test_config)
 
-
+sh_str=rf''''''
 
 previous_lora_path_list = []
 for idx in range(len(dataset_list)-1):
@@ -172,7 +172,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
-   
+   --resume_from_checkpoint True \
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
@@ -231,7 +231,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
-   
+   --resume_from_checkpoint True \
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
@@ -290,7 +290,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
-   
+   --resume_from_checkpoint True \
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
