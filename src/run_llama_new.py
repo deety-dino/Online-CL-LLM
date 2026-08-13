@@ -600,17 +600,18 @@ def main():
 
     total_params, params = 0, 0
     for n, p in model.named_parameters():
+        num_params = getattr(p, "ds_numel", p.numel())
         if p.requires_grad:
         # if any([x in n for x in ["router", "A", "z"]]):
             print(n)
-            total_params += p.numel()
-        params += p.numel()
+            total_params += num_params
+        params += num_params
 
     print(
         "Total number of parameters: {}M, rate: {}%".format(
             total_params // 1000 / 1000, round(total_params / params * 100, 2)
         )
-    )
+    ) if params > 0 else print("No trainable parameters found. Please check the model configuration.")   
 
     if (
             hasattr(model.config, "max_position_embeddings")
