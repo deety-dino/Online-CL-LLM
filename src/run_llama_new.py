@@ -29,7 +29,6 @@ import math
 import torch
 
 import pickle
-from transformers import BitsAndBytesConfig
 import datasets
 import nltk  # Here to have a nice missing dependency error message early on
 import numpy as np
@@ -491,13 +490,7 @@ def main():
         'flash_attention':model_args.flash_attention,
         'successor':model_args.successor
     }
-    quantization_config = BitsAndBytesConfig(
-        load_in_8bit=True,
-        llm_int8_threshold=6.0,
-        llm_int8_skip_modules=["lm_head"],
-        llm_int8_enable_fp32_cpu_offload=False,
-        llm_int8_has_fp16_weight=False,
-    )
+
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         prompt_config,
@@ -507,7 +500,7 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
         use_safetensors=True,
-    )
+    ).to('cuda')
     
     model.resize_token_embeddings(len(tokenizer))
 
@@ -521,45 +514,24 @@ def main():
         previous_lora_list.reverse()
         print(previous_lora_list)
         print("----------Loading Previous LoRA Weights----------")
-
         for i, path in enumerate(previous_lora_list):
             lora_A = torch.load(os.path.join(path, "lora_weights_A.pt"))
             lora_B = torch.load(os.path.join(path, "lora_weights_B.pt"))
             ## Loading LoRA weights for LLaMA-2
             for j in range(config.num_hidden_layers):
-                # 1. Trích xuất các tensor trọng số từ file load để code dễ nhìn hơn
-                weight_q_a = lora_A[f"model.layers.{j}.self_attn.lora_q.lora_A"]
-                weight_q_b = lora_B[f"model.layers.{j}.self_attn.lora_q.lora_B"]
-                weight_v_a = lora_A[f"model.layers.{j}.self_attn.lora_v.lora_A"]
-                weight_v_b = lora_B[f"model.layers.{j}.self_attn.lora_v.lora_B"]
-
-                # 2. Gán cho lora_q (Ma trận A)
-                target_q_a = model.model.layers[j].self_attn.previous_lora_weights_q[i].lora_A
-                if target_q_a.numel() == 0:
-                    model.model.layers[j].self_attn.previous_lora_weights_q[i].lora_A = torch.nn.Parameter(weight_q_a.clone().to(target_q_a.device))
-                else:
-                    target_q_a.data.copy_(weight_q_a)
-
-                # 3. Gán cho lora_q (Ma trận B)
-                target_q_b = model.model.layers[j].self_attn.previous_lora_weights_q[i].lora_B
-                if target_q_b.numel() == 0:
-                    model.model.layers[j].self_attn.previous_lora_weights_q[i].lora_B = torch.nn.Parameter(weight_q_b.clone().to(target_q_b.device))
-                else:
-                    target_q_b.data.copy_(weight_q_b)
-
-                # 4. Gán cho lora_v (Ma trận A)
-                target_v_a = model.model.layers[j].self_attn.previous_lora_weights_v[i].lora_A
-                if target_v_a.numel() == 0:
-                    model.model.layers[j].self_attn.previous_lora_weights_v[i].lora_A = torch.nn.Parameter(weight_v_a.clone().to(target_v_a.device))
-                else:
-                    target_v_a.data.copy_(weight_v_a)
-
-                # 5. Gán cho lora_v (Ma trận B)
-                target_v_b = model.model.layers[j].self_attn.previous_lora_weights_v[i].lora_B
-                if target_v_b.numel() == 0:
-                    model.model.layers[j].self_attn.previous_lora_weights_v[i].lora_B = torch.nn.Parameter(weight_v_b.clone().to(target_v_b.device))
-                else:
-                    target_v_b.data.copy_(weight_v_b)
+                model.model.layers[j].self_attn.previous_lora_weights_q[i].lora_A.data.copy_(
+                    lora_A[f"model.layers.{j}.self_attn.lora_q.lora_A"]
+                )
+                model.model.layers[j].self_attn.previous_lora_weights_q[i].lora_B.data.copy_(
+                    lora_B[f"model.layers.{j}.self_attn.lora_q.lora_B"]
+                )
+                model.model.layers[j].self_attn.previous_lora_weights_v[i].lora_A.data.copy_(
+                    lora_A[f"model.layers.{j}.self_attn.lora_v.lora_A"]
+                )
+                model.model.layers[j].self_attn.previous_lora_weights_v[i].lora_B.data.copy_(
+                    lora_B[f"model.layers.{j}.self_attn.lora_v.lora_B"]
+                )
+    
     if model_args.previous_lora_distribution_path:
         previous_lora_distribution_list = model_args.previous_lora_distribution_path.split(',')
         previous_lora_distribution_list.reverse()
@@ -638,7 +610,7 @@ def main():
         "Total number of parameters: {}M, rate: {}%".format(
             total_params // 1000 / 1000, round(total_params / params * 100, 2)
         )
-    ) if params > 0 else print("Total number of parameters: {}M".format(total_params // 1000 / 1000))
+    )
 
     if (
             hasattr(model.config, "max_position_embeddings")

@@ -23,7 +23,7 @@ def write_jsonline(path, data):
             f.write(line_s)
             f.write('\n')
 
-order_idx = 3
+order_idx = 4
 
 if order_idx == 4:
     all_tasks=[
@@ -31,17 +31,7 @@ if order_idx == 4:
         "amazon",
         "mnli",
         "cb",
-        "copa",
-        "qqp",
-        "rte",
-        "imdb",
-        "sst2",
-        "dbpedia",
-        "agnews",
-        "yahoo",
-        "multirc",
-        "boolq",
-        "wic"
+        "copa"
     ] # Order 4
 else:
     all_tasks = ["mnli",
@@ -137,7 +127,6 @@ port=$(shuf -i25000-30000 -n1)
 
 deepspeed --num_gpus=2 src/run_llama_new.py \
    --do_train \
-   --do_eval \
    --do_predict \
    --predict_with_generate \
    --model_name_or_path {model_path} \
@@ -214,7 +203,6 @@ for idx in range(len(dataset_list)-1):
 
 deepspeed --num_gpus=2 src/run_llama_new.py \
    --do_train \
-   --do_eval \
    --do_predict \
    --predict_with_generate \
    --model_name_or_path {model_path} \
@@ -274,7 +262,6 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
 
 deepspeed --num_gpus=2 src/run_llama_new.py \
    --do_train \
-   --do_eval \
    --do_predict \
    --predict_with_generate \
    --model_name_or_path {model_path} \
@@ -335,6 +322,7 @@ sh_str+=rf'''
 
 deepspeed --num_gpus=2 src/run_llama_new.py \
    --do_predict \
+   --do_eval \
    --predict_with_generate \
    --model_name_or_path {model_path} \
    --previous_lora_path {previous_lora_path} \
