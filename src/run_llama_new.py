@@ -37,6 +37,7 @@ from datasets import load_dataset
 import copy
 
 import transformers
+from transformers import BitsAndBytesConfig
 from transformers import (
     AutoConfig,
     AutoTokenizer,
@@ -490,10 +491,14 @@ def main():
         'flash_attention':model_args.flash_attention,
         'successor':model_args.successor
     }
-
+    quantization_config = BitsAndBytesConfig(
+        load_in_8bit=True,
+        llm_int8_threshold=6.0  # Ngưỡng phát hiện outlier để giữ ở FP16 (mặc định là 6.0)
+    )
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         prompt_config,
+        quantization_config=quantization_config,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
         cache_dir=model_args.cache_dir,
