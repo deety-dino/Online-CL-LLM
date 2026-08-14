@@ -135,7 +135,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --task_config_dir configs/{run_name}_configs/{dataset_list[0]} \
    --output_dir logs_and_outputs/{run_name}/outputs/1-{dataset_list[0]} \
    --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 16 \
+   --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
@@ -214,7 +214,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
    --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 16 \
+   --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
@@ -273,7 +273,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
    --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 16 \
+   --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
@@ -333,7 +333,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --task_config_dir configs/{run_name}_configs/{dataset_list[idx+1]} \
    --output_dir logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]} \
    --per_device_train_batch_size 1 \
-   --per_device_eval_batch_size 16 \
+   --per_device_eval_batch_size 8 \
    --gradient_accumulation_steps 4 \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
