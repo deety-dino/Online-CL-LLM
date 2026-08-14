@@ -27,6 +27,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 import math
 import torch
+import deepspeed
 
 import pickle
 import datasets
