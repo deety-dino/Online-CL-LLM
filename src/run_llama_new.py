@@ -514,31 +514,36 @@ def main():
         previous_lora_list.reverse()
         print(previous_lora_list)
         print("----------Loading Previous LoRA Weights----------")
-## Loading LoRA weights for LLaMA-2
-    for j in range(config.num_hidden_layers):
-        # 1. Gán các tham số (parameters) cần copy vào các biến
-        param_q_A = model.model.layers[j].self_attn.previous_lora_weights_q[i].lora_A
-        param_q_B = model.model.layers[j].self_attn.previous_lora_weights_q[i].lora_B
-        param_v_A = model.model.layers[j].self_attn.previous_lora_weights_v[i].lora_A
-        param_v_B = model.model.layers[j].self_attn.previous_lora_weights_v[i].lora_B
-        
-        # 2. Đưa các tham số này vào một danh sách để gom (gather) cùng lúc
-        params_to_gather = [param_q_A, param_q_B, param_v_A, param_v_B]
-        
-        # 3. Sử dụng GatheredParameters để khôi phục kích thước tensor từ 0 -> kích thước thật
-        with deepspeed.zero.GatheredParameters(params_to_gather, modifier_rank=None):
-            param_q_A.data.copy_(
-                lora_A[f"model.layers.{j}.self_attn.lora_q.lora_A"]
-            )
-            param_q_B.data.copy_(
-                lora_B[f"model.layers.{j}.self_attn.lora_q.lora_B"]
-            )
-            param_v_A.data.copy_(
-                lora_A[f"model.layers.{j}.self_attn.lora_v.lora_A"]
-            )
-            param_v_B.data.copy_(
-                lora_B[f"model.layers.{j}.self_attn.lora_v.lora_B"]
-            )
+        for i, path in enumerate(previous_lora_list):
+            lora_A = torch.load(os.path.join(path, "lora_weights_A.pt"))
+            lora_B = torch.load(os.path.join(path, "lora_weights_B.pt"))
+            ## Loading LoRA weights for LLaMA-2
+            ## Loading LoRA weights for LLaMA-2
+            for j in range(config.num_hidden_layers):
+                # 1. Gán các tham số (parameters) cần copy vào các biến
+                param_q_A = model.model.layers[j].self_attn.previous_lora_weights_q[i].lora_A
+                param_q_B = model.model.layers[j].self_attn.previous_lora_weights_q[i].lora_B
+                param_v_A = model.model.layers[j].self_attn.previous_lora_weights_v[i].lora_A
+                param_v_B = model.model.layers[j].self_attn.previous_lora_weights_v[i].lora_B
+                
+                # 2. Đưa các tham số này vào một danh sách để gom (gather) cùng lúc
+                params_to_gather = [param_q_A, param_q_B, param_v_A, param_v_B]
+                
+                # 3. Sử dụng GatheredParameters để khôi phục kích thước tensor từ 0 -> kích thước thật
+                with deepspeed.zero.GatheredParameters(params_to_gather, modifier_rank=None):
+                    param_q_A.data.copy_(
+                        lora_A[f"model.layers.{j}.self_attn.lora_q.lora_A"]
+                    )
+                    param_q_B.data.copy_(
+                        lora_B[f"model.layers.{j}.self_attn.lora_q.lora_B"]
+                    )
+                    param_v_A.data.copy_(
+                        lora_A[f"model.layers.{j}.self_attn.lora_v.lora_A"]
+                    )
+                    param_v_B.data.copy_(
+                        lora_B[f"model.layers.{j}.self_attn.lora_v.lora_B"]
+                    )
+    
     if model_args.previous_lora_distribution_path:
         previous_lora_distribution_list = model_args.previous_lora_distribution_path.split(',')
         previous_lora_distribution_list.reverse()
