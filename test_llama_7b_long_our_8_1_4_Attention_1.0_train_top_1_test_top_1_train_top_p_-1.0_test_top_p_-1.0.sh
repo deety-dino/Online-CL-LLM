@@ -28,7 +28,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --gradient_accumulation_steps 4 \
    --learning_rate 2e-05 \
    --attn_lr 0.0 \
-   --num_train_epochs 0.2 \
+   --num_train_epochs 1 \
    --fp16 \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name test_llama_7b_long_our_8_1_4_Attention_1.0_train_top_1_test_top_1_train_top_p_-1.0_test_top_p_-1.0 \
@@ -40,7 +40,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
- 
+   --max_predict_samples 200 \
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
@@ -85,7 +85,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --gradient_accumulation_steps 4 \
    --learning_rate 2e-05 \
    --attn_lr 0.0 \
-   --num_train_epochs 0.2 \
+   --num_train_epochs 1 \
    --fp16 \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name test_llama_7b_long_our_8_1_4_Attention_1.0_train_top_1_test_top_1_train_top_p_-1.0_test_top_p_-1.0 \
@@ -97,7 +97,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
- 
+   --max_predict_samples 200 \
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
@@ -142,7 +142,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --gradient_accumulation_steps 4 \
    --learning_rate 2e-05 \
    --attn_lr 0.0 \
-   --num_train_epochs 0.2 \
+   --num_train_epochs 1 \
    --fp16 \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name test_llama_7b_long_our_8_1_4_Attention_1.0_train_top_1_test_top_1_train_top_p_-1.0_test_top_p_-1.0 \
@@ -154,7 +154,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
- 
+   --max_predict_samples 200 \
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
@@ -211,7 +211,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
- 
+   --max_predict_samples 200 \
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
@@ -268,7 +268,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
- 
+   --max_predict_samples 200 \
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
@@ -313,7 +313,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --gradient_accumulation_steps 4 \
    --learning_rate 2e-05 \
    --attn_lr 0.0 \
-   --num_train_epochs 0.2 \
+   --num_train_epochs 1 \
    --fp16 \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name test_llama_7b_long_our_8_1_4_Attention_1.0_train_top_1_test_top_1_train_top_p_-1.0_test_top_p_-1.0 \
@@ -325,7 +325,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --add_task_name False \
    --add_dataset_name False \
    --overwrite_output_dir \
- 
+   --max_predict_samples 200 \
    --overwrite_cache \
    --lr_scheduler_type constant \
    --warmup_steps 0 \
