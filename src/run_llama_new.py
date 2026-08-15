@@ -223,10 +223,6 @@ class ModelArguments:
         default='N',
         metadata={"help": "Path to load previous distribution"}
     )
-    load_in_8bit: bool = field(
-        default=True, 
-        metadata={"help": "Whether to load the model in 8-bit precision."}
-    )
 
 @dataclass
 class DataTrainingArguments:
