@@ -65,7 +65,7 @@ for i in range(len(data_list)):
         if 'classification' in data_list[j]:
             score=inference_result[f'predict_exact_match_for_{data_list[j]}']
         else:
-            score=inference_result[f'{benchmark_type}{data_list[j]}'] #  "predict_exact_match_for_" for Long Sequence
+            score = inference_result['predict_exact_match'] #  "predict_exact_match_for_" for Long Sequence
         score_line.append(score)
     score_line.extend([0]*(task_num-i-1))
     scores.append(score_line)
