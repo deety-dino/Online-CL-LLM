@@ -30,6 +30,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --attn_lr 0.0 \
    --num_train_epochs 1 \
    --fp16 \
+   --load_in_8bit \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name test_llama_7b_long_our_8_1_4_Attention_1.0_train_top_1_test_top_1_train_top_p_-1.0_test_top_p_-1.0 \
    --distances_temperature 1.0 \
@@ -87,6 +88,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --attn_lr 0.0 \
    --num_train_epochs 1 \
    --fp16 \
+   --load_in_8bit \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name test_llama_7b_long_our_8_1_4_Attention_1.0_train_top_1_test_top_1_train_top_p_-1.0_test_top_p_-1.0 \
    --distances_temperature 1.0 \
@@ -144,6 +146,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --attn_lr 0.0 \
    --num_train_epochs 1 \
    --fp16 \
+   --load_in_8bit \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name test_llama_7b_long_our_8_1_4_Attention_1.0_train_top_1_test_top_1_train_top_p_-1.0_test_top_p_-1.0 \
    --distances_temperature 1.0 \
@@ -201,6 +204,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --attn_lr 0.0 \
    --max_steps 100 \
    --fp16 \
+   --load_in_8bit \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name test_llama_7b_long_our_8_1_4_Attention_1.0_train_top_1_test_top_1_train_top_p_-1.0_test_top_p_-1.0 \
    --distances_temperature 1.0 \
@@ -258,6 +262,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --attn_lr 0.0 \
    --max_steps 200 \
    --fp16 \
+   --load_in_8bit \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name test_llama_7b_long_our_8_1_4_Attention_1.0_train_top_1_test_top_1_train_top_p_-1.0_test_top_p_-1.0 \
    --distances_temperature 1.0 \
@@ -315,6 +320,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --attn_lr 0.0 \
    --num_train_epochs 1 \
    --fp16 \
+   --load_in_8bit \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name test_llama_7b_long_our_8_1_4_Attention_1.0_train_top_1_test_top_1_train_top_p_-1.0_test_top_p_-1.0 \
    --distances_temperature 1.0 \
