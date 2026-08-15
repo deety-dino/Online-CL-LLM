@@ -224,7 +224,7 @@ class ModelArguments:
         metadata={"help": "Path to load previous distribution"}
     )
     load_in_8bit: bool = field(
-        default=False, 
+        default=True, 
         metadata={"help": "Whether to load the model in 8-bit precision."}
     )
 
