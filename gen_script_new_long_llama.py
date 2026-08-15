@@ -108,7 +108,6 @@ for one_data_name in dataset_list:
     test_config=deepcopy(config_template)
     test_config['Long_Sequence'].extend(history_config)
     write_json(f'./configs/{run_name}_configs/{one_data_name}/test_tasks.json', test_config)
-
 sh_str=rf'''
 #!/bin/bash
 #SBATCH -J cl                           
@@ -124,7 +123,7 @@ fuser -k /dev/nvidia*
 export CUDA_DEVICE_ORDER="PCI_BUS_ID"
 
 port=$(shuf -i25000-30000 -n1)  
-
+print("---------------------Task 0: {dataset_list[0]}---------------------")
 deepspeed --num_gpus=2 src/run_llama_new.py \
    --do_train \
    --do_predict \
@@ -145,7 +144,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
-   --max_source_length 512\
+   --max_source_length 256\
    --max_target_length 50 \
    --generation_max_length 50 \
    --add_task_name False \
@@ -200,7 +199,8 @@ for idx in range(len(dataset_list)-1):
             max_steps = 500
         
         sh_str+=rf'''
-
+print("---------------------Previsous tasks: {dataset_list[idx]}---------------------")
+print("---------------------Task {idx+1}: {dataset_list[idx+1]}---------------------")
 deepspeed --num_gpus=2 src/run_llama_new.py \
    --do_train \
    --do_predict \
@@ -224,7 +224,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
-   --max_source_length 512\
+   --max_source_length 256\
    --max_target_length 50 \
    --generation_max_length 50 \
    --add_task_name False \
@@ -259,7 +259,8 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
 '''
     else:
         sh_str+=rf'''
-
+print("---------------------Previsous tasks: {dataset_list[idx]}---------------------")
+print("---------------------Task {idx+1}: {dataset_list[idx+1]}---------------------")
 deepspeed --num_gpus=2 src/run_llama_new.py \
    --do_train \
    --do_predict \
@@ -283,7 +284,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
-   --max_source_length 512\
+   --max_source_length 256\
    --max_target_length 50 \
    --generation_max_length 50 \
    --add_task_name False \
@@ -343,7 +344,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
    --distances_way {distances_way} \
-   --max_source_length 512\
+   --max_source_length 256\
    --max_target_length 50 \
    --generation_max_length 50 \
    --add_task_name False \
