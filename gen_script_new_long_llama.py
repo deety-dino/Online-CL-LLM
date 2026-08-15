@@ -140,8 +140,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-
-   --load_in_8bit \
+   --fp16 \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
@@ -220,8 +219,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --max_steps {max_steps} \
-
-   --load_in_8bit \
+   --fp16 \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
@@ -280,8 +278,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-
-   --load_in_8bit \
+   --fp16 \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
@@ -341,8 +338,7 @@ deepspeed --num_gpus=2 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-
-   --load_in_8bit \
+   --fp16 \
    --deepspeed configs/ds_configs/stage3.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
