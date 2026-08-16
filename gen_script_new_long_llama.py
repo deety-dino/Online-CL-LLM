@@ -80,7 +80,7 @@ test_top=train_top
 train_top_p=-1.0
 test_top_p=-1.0
 
-successor='Y'
+successor='N'
 num_gpus = 2
 
 run_name = f"test_llama_7b_long_our_8_1_4_{distances_way}_{distances_temperature}_train_top_{train_top}_test_top_{test_top}_train_top_p_{train_top_p}_test_top_p_{test_top_p}"
