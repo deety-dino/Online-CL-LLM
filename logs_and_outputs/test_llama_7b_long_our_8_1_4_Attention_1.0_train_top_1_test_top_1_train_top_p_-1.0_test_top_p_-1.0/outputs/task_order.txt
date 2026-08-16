@@ -1,1 +1,1 @@
-yelp,amazon,mnli
+yelp,amazon,mnli,cb,copa
