@@ -92,6 +92,7 @@ test_top_p=train_top_p
 model_size='13b'
 
 successor='N'
+num_gpus = 2
 
 
 run_name = f"test_llama_{model_size}_superni_our_8_1_4_{distances_way}_{distances_temperature}_train_top_{train_top}_test_top_{test_top}_train_top_p_{train_top_p}_test_top_p_{test_top_p}"
@@ -137,7 +138,7 @@ export CUDA_DEVICE_ORDER="PCI_BUS_ID"
 export TORCH_DISTRIBUTED_DEBUG=DETAIL
 port=$(shuf -i25000-30000 -n1)  
 
-deepspeed --num_gpus=8 src/run_llama_new.py \
+deepspeed --num_gpus={num_gpus} src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
@@ -152,7 +153,7 @@ deepspeed --num_gpus=8 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   --bf16 \
+   --fp16 \
    --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
@@ -197,7 +198,7 @@ for idx in range(len(dataset_list)-1):
     previous_lora_path = ','.join(previous_lora_path_list)
     sh_str+=rf'''
 
-deepspeed --num_gpus=8 src/run_llama_new.py \
+deepspeed --num_gpus={num_gpus} src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
@@ -215,7 +216,7 @@ deepspeed --num_gpus=8 src/run_llama_new.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   --bf16 \
+   --fp16 \
    --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \
@@ -257,7 +258,7 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
 
 sh_str+=rf'''
 
-deepspeed --num_gpus=8 src/run_llama_new_eval.py \
+deepspeed --num_gpus={num_gpus} src/run_llama_new_eval.py \
    --do_predict \
    --predict_with_generate \
    --model_name_or_path {model_path} \
@@ -274,7 +275,7 @@ deepspeed --num_gpus=8 src/run_llama_new_eval.py \
    --learning_rate {learning_rate} \
    --attn_lr {attn_lr} \
    --num_train_epochs {num_train_epochs} \
-   --bf16 \
+   --fp16 \
    --deepspeed configs/ds_configs/stage2.config \
    --run_name {run_name} \
    --distances_temperature {distances_temperature} \

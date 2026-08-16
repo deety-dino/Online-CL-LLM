@@ -81,6 +81,7 @@ train_top_p=-1.0
 test_top_p=-1.0
 
 successor='Y'
+num_gpus = 2
 
 run_name = f"test_llama_7b_long_our_8_1_4_{distances_way}_{distances_temperature}_train_top_{train_top}_test_top_{test_top}_train_top_p_{train_top_p}_test_top_p_{test_top_p}"
 model_path='meta-llama/Llama-2-7b-chat-hf'
@@ -124,7 +125,7 @@ export CUDA_DEVICE_ORDER="PCI_BUS_ID"
 
 port=$(shuf -i25000-30000 -n1)  
 
-deepspeed --num_gpus=8 src/run_llama_new.py \
+deepspeed --num_gpus={num_gpus} src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
@@ -199,7 +200,7 @@ for idx in range(len(dataset_list)-1):
         
         sh_str+=rf'''
 
-deepspeed --num_gpus=8 src/run_llama_new.py \
+deepspeed --num_gpus={num_gpus} src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
@@ -257,7 +258,7 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
     else:
         sh_str+=rf'''
 
-deepspeed --num_gpus=8 src/run_llama_new.py \
+deepspeed --num_gpus={num_gpus} src/run_llama_new.py \
    --do_train \
    --do_predict \
    --predict_with_generate \
@@ -316,7 +317,7 @@ rm -rf logs_and_outputs/{run_name}/outputs/{idx+2}-{dataset_list[idx+1]}/checkpo
 
 sh_str+=rf'''
 
-deepspeed --num_gpus=8 src/run_llama_new.py \
+deepspeed --num_gpus={num_gpus} src/run_llama_new.py \
    --do_predict \
    --predict_with_generate \
    --model_name_or_path {model_path} \
