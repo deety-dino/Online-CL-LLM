@@ -29,7 +29,7 @@ def write_jsonline(path, data):
 order_idx = 4
 
 if order_idx == 4:
-  all_tasks = ['yelp', 'amazon', 'mnli', 'cb', 'copa']  # Order 4
+  all_tasks = ['yelp', 'amazon', 'mnli']  # Order 4
 else:
   all_tasks = [
       'mnli',
