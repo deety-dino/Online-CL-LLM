@@ -65,6 +65,26 @@ CURRENT_DIR = os.path.dirname(__file__)
 local_data_path = "/home/work/nltk_data"
 nltk.data.path.append(local_data_path)
 
+
+def select_max_samples_per_dataset(dataset, max_samples_per_dataset):
+    if max_samples_per_dataset is None:
+        return dataset
+    if max_samples_per_dataset <= 0:
+        return dataset.select([])
+    if "Dataset" not in dataset.column_names:
+        return dataset.select(range(min(max_samples_per_dataset, len(dataset))))
+
+    selected_indices = []
+    counts_by_dataset = {}
+    for idx, dataset_name in enumerate(dataset["Dataset"]):
+        count = counts_by_dataset.get(dataset_name, 0)
+        if count < max_samples_per_dataset:
+            selected_indices.append(idx)
+            counts_by_dataset[dataset_name] = count + 1
+
+    logger.info("Selected predict samples per dataset: %s", counts_by_dataset)
+    return dataset.select(selected_indices)
+
 @dataclass
 class ModelArguments:
     """
@@ -309,8 +329,8 @@ class DataTrainingArguments:
     max_predict_samples: Optional[int] = field(
         default=None,
         metadata={
-            "help": "For debugging purposes or quicker training, truncate the number of prediction examples to this "
-                    "value if set."
+            "help": "For debugging purposes or quicker training, truncate prediction examples to this value per "
+                    "dataset if set."
         },
     )
     num_examples: Optional[int] = field(
@@ -662,8 +682,7 @@ def main():
         if "test" not in raw_datasets:
             raise ValueError("--do_predict requires a test dataset")
         predict_dataset = raw_datasets["test"]
-        if data_args.max_predict_samples is not None:
-            predict_dataset = predict_dataset.select(range(data_args.max_predict_samples))
+        predict_dataset = select_max_samples_per_dataset(predict_dataset, data_args.max_predict_samples)
 
     # Data collator
     label_pad_token_id = -100 if data_args.ignore_pad_token_for_loss else tokenizer.pad_token_id
@@ -794,9 +813,6 @@ def main():
         logger.info("*** Prediction ***")
         logger.info("*** Loading CheckPoint ***")
 
-        if data_args.max_predict_samples is not None:
-            predict_dataset = predict_dataset.select(range(data_args.max_predict_samples))
-
         model.model.is_inference = True
         _ = trainer.predict(
             predict_dataset,
@@ -826,10 +842,7 @@ def main():
         )
         model.model.is_inference = False
         metrics = predict_results.metrics
-        max_predict_samples = (
-            data_args.max_predict_samples if data_args.max_predict_samples is not None else len(predict_dataset)
-        )
-        metrics["predict_samples"] = min(max_predict_samples, len(predict_dataset))
+        metrics["predict_samples"] = len(predict_dataset)
 
         trainer.log(metrics)
         trainer.log_metrics("predict", metrics)

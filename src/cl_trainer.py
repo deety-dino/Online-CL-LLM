@@ -352,7 +352,7 @@ class Trainer(Seq2SeqTrainer):
             loss, logits, labels = self.prediction_step(model, inputs, prediction_loss_only, ignore_keys=ignore_keys)
 
             # Update containers on host
-            if loss is not None:
+            if loss is not None and torch.isfinite(loss).all():
                 losses = self._nested_gather(loss.repeat(batch_size))
                 losses_host = losses if losses_host is None else torch.cat((losses_host, losses), dim=0)
             if labels is not None:
@@ -475,6 +475,8 @@ class Trainer(Seq2SeqTrainer):
 
         has_labels = "labels" in inputs
         inputs = self._prepare_inputs(inputs)
+        label_pad_token_id = getattr(self.data_collator, "label_pad_token_id", -100)
+        has_valid_labels = has_labels and torch.any(inputs["labels"] != label_pad_token_id)
 
         # XXX: adapt synced_gpus for fairscale as well
         # gen_kwargs = self._gen_kwargs
@@ -556,13 +558,15 @@ class Trainer(Seq2SeqTrainer):
             generated_tokens = self._pad_tensors_to_max_len(generated_tokens, max_length)
 
         with torch.no_grad():
-            if has_labels:
+            if has_valid_labels:
                 with self.autocast_smart_context_manager():
                     outputs = model(**inputs)
                 if self.label_smoother is not None:
                     loss = self.label_smoother(outputs, inputs["labels"]).mean().detach()
                 else:
                     loss = (outputs["loss"] if isinstance(outputs, dict) else outputs[0]).mean().detach()
+                if not torch.isfinite(loss).all():
+                    loss = None
             else:
                 loss = None
 
