@@ -516,9 +516,6 @@ class Trainer(Seq2SeqTrainer):
                 
             gen_kwargs["synced_gpus"] = False
 
-        if "attention_mask" in inputs:
-            gen_kwargs["attention_mask"] = inputs.get("attention_mask", None)
-
         generation_config = GenerationConfig(**gen_kwargs)
 
         # prepare generation inputs
@@ -529,25 +526,29 @@ class Trainer(Seq2SeqTrainer):
             
             generated_tokens = self.model.generate(
                 input_ids=generation_inputs, 
+                attention_mask=inputs.get("attention_mask", None),
                 generation_config=generation_config,
             )
         else:
-            generation_inputs = inputs[self.model.main_input_name]
-
             if inputs.get("input_ids_wo_label", None) is not None:
+                generation_inputs = inputs["input_ids_wo_label"]
+                generation_attention_mask = generation_inputs.ne(generation_config.pad_token_id).long()
                 generated_tokens = self.model.generate(
                     input_ids=generation_inputs,
                     input_ids_wo_label=inputs["input_ids_wo_label"],
+                    attention_mask=generation_attention_mask,
                     generation_config=generation_config,
                 )
             
             else:
+                generation_inputs = inputs[self.model.main_input_name]
                 generated_tokens = self.model.generate(
                     input_ids=generation_inputs,
+                    attention_mask=inputs.get("attention_mask", None),
                     generation_config=generation_config,
                 )
 
-        bs, source_len = inputs['input_ids'].shape
+        bs, source_len = generation_inputs.shape
         # in case the batch is shorter than max length, the output should be padded
         if check_model(self.model.config._name_or_path, SUPPORTED_DECODER_MODELS):
             max_length = source_len + gen_kwargs["max_new_tokens"]

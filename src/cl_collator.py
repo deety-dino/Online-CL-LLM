@@ -164,11 +164,12 @@ class DataCollator:
             if len(tokenized_label)>self.max_target_length:
                 tokenized_label=tokenized_label[:self.max_target_length]
 
-            # (input) for inference, (input + label) for training
+            # Keep prompt-only ids for generation, but include labels in dev/test
+            # input_ids so predict_loss can be computed against gold outputs.
             if instance['subset'] in ['dev', 'test']:
-                input_ids.append(tokenized_input)
+                input_ids.append(tokenized_input+tokenized_label)
                 input_ids_wo_label.append(tokenized_input)
-                labels.append([self.label_pad_token_id]*len(tokenized_input))
+                labels.append([self.label_pad_token_id]*len(tokenized_input)+tokenized_label)
             else:
                 input_ids.append(tokenized_input+tokenized_label)
                 input_ids_wo_label.append(tokenized_input)
