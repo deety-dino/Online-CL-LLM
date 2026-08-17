@@ -327,10 +327,10 @@ class DataTrainingArguments:
         },
     )
     max_predict_samples: Optional[int] = field(
-        default=None,
+        default=500,
         metadata={
             "help": "For debugging purposes or quicker training, truncate prediction examples to this value per "
-                    "dataset if set."
+                    "dataset if set. Defaults to 500 to keep prediction time bounded."
         },
     )
     num_examples: Optional[int] = field(
