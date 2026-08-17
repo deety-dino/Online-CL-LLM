@@ -23,6 +23,7 @@ from typing import List, Optional, Tuple, Union
 
 import torch
 import torch.utils.checkpoint
+from torch.utils.checkpoint import checkpoint
 from torch import nn
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 
@@ -45,8 +46,15 @@ logger = logging.get_logger(__name__)
 
 _CONFIG_FOR_DOC = "LlamaConfig"
 
-from flash_attn import flash_attn_func, flash_attn_varlen_func
-from flash_attn.bert_padding import index_first_axis, pad_input, unpad_input  # noqa
+try:
+    from flash_attn import flash_attn_func, flash_attn_varlen_func
+    from flash_attn.bert_padding import index_first_axis, pad_input, unpad_input  # noqa
+    FLASH_ATTN_AVAILABLE = True
+except (ImportError, RuntimeError):
+    # Keep FlashAttention optional: the standard path is the safe default on T4.
+    FLASH_ATTN_AVAILABLE = False
+    flash_attn_func = flash_attn_varlen_func = None
+    index_first_axis = pad_input = unpad_input = None
 
 # Copied from transformers.models.bart.modeling_bart._make_causal_mask
 def _make_causal_mask(
@@ -671,6 +679,11 @@ class LlamaFlashAttention2(LlamaAttention):
     """
 
     def __init__(self, config: LlamaConfig, prompt_config):
+        if not FLASH_ATTN_AVAILABLE:
+            raise ImportError(
+                "flash_attention=True requires a compatible flash-attn build. "
+                "Use --flash_attention False on Kaggle T4."
+            )
         super().__init__(config, prompt_config)
         
 
@@ -1278,21 +1291,24 @@ class LlamaModel(LlamaPreTrainedModel):
             past_key_value = past_key_values[idx] if past_key_values is not None else None
 
             if self.gradient_checkpointing and self.training:
-
-                def create_custom_forward(module):
-                    def custom_forward(*inputs):
-                        # None for past_key_value
-                        return module(*inputs, output_attentions, None)
-
-                    return custom_forward
-
-                raise Exception("gradient_checkpointing is running")
-                layer_outputs = torch.utils.checkpoint.checkpoint(
-                    create_custom_forward(decoder_layer),
+                # Non-reentrant checkpointing is required because the frozen
+                # embedding output does not require gradients, while LoRA
+                # parameters inside the layer still do.
+                layer_outputs = checkpoint(
+                    decoder_layer,
                     hidden_states,
                     attention_mask,
                     position_ids,
-                    None,
+                    past_key_value,
+                    output_attentions,
+                    False,
+                    key_attention_weights,
+                    input_ids,
+                    input_ids_wo_label,
+                    attention_mask_flash,
+                    past_key_attention_weights_v,
+                    past_key_attention_weights_q,
+                    use_reentrant=False,
                 )
             else:
                 layer_outputs = decoder_layer(

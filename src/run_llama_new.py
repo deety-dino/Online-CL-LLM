@@ -26,6 +26,12 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 import math
+
+# Keep tokenizer/OpenMP workers from multiplying memory usage on Kaggle.
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+os.environ.setdefault("OMP_NUM_THREADS", "2")
+os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "max_split_size_mb:128")
+
 import torch
 import deepspeed
 
@@ -38,7 +44,6 @@ from datasets import load_dataset
 import copy
 
 import transformers
-from transformers import BitsAndBytesConfig
 from transformers import (
     AutoConfig,
     AutoTokenizer,
@@ -62,8 +67,15 @@ os.environ['WANDB_DISABLED'] = "True"
 logger = logging.getLogger(__name__)
 CURRENT_DIR = os.path.dirname(__file__)
 
-local_data_path = "/home/work/nltk_data"
-nltk.data.path.append(local_data_path)
+# Kaggle stores writable data under /kaggle/working; keep the old path as a
+# fallback for the original cluster environment.
+for local_data_path in (
+    os.environ.get("NLTK_DATA", ""),
+    "/kaggle/working/nltk_data",
+    "/home/work/nltk_data",
+):
+    if local_data_path and local_data_path not in nltk.data.path:
+        nltk.data.path.append(local_data_path)
 
 
 def select_max_samples_per_dataset(dataset, max_samples_per_dataset):
@@ -359,7 +371,7 @@ class DataTrainingArguments:
 @dataclass
 class TrainingArguments(Seq2SeqTrainingArguments):
     gradient_checkpointing: Optional[bool] = field(
-        default=False,
+        default=True,
         metadata={"help": "Whether to use computing time to gain more memory"}
     )
     denser_evaluation: Optional[bool] = field(
@@ -444,7 +456,7 @@ def main():
 
     task_order = data_args.task_order.split(',')
     
-    cur_task = data_args.task_config_dir.split('/')[-1]
+    cur_task = os.path.basename(os.path.normpath(data_args.task_config_dir))
     if cur_task in task_order:
         cur_task_id = task_order.index(cur_task)
     else:
@@ -455,12 +467,11 @@ def main():
         os.path.join(CURRENT_DIR, "cl_dataset.py"),
         data_dir=data_args.data_dir,
         task_config_dir=data_args.task_config_dir,
-        # cache_dir=data_cache_dir,  # for debug, change dataset size, otherwise open it
+        cache_dir=data_cache_dir,
         max_num_instances_per_task=data_args.max_num_instances_per_task,
         max_num_instances_per_eval_task=data_args.max_num_instances_per_eval_task,
         num_examples=data_args.num_examples,
     )
-    raw_datasets.cleanup_cache_files()
     print(raw_datasets)
 
     config = AutoConfig.from_pretrained(
@@ -472,6 +483,9 @@ def main():
     config.bos_token_id = 1
     config.eos_token_id = 2
     config.pad_token_id = 1
+    # KV-cache is unnecessary during teacher-forced training and conflicts
+    # with gradient checkpointing.
+    config.use_cache = False
     tokenizer = transformers.LlamaTokenizer.from_pretrained(
         model_args.model_name_or_path,
         cache_dir = model_args.cache_dir,
@@ -520,7 +534,10 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
         use_safetensors=True,
+        torch_dtype=torch.float16 if training_args.fp16 else torch.float32,
+        low_cpu_mem_usage=True,
     )
+    model.config.use_cache = False
     
     model.resize_token_embeddings(len(tokenizer))
 
@@ -535,8 +552,8 @@ def main():
         print(previous_lora_list)
         print("----------Loading Previous LoRA Weights----------")
         for i, path in enumerate(previous_lora_list):
-            lora_A = torch.load(os.path.join(path, "lora_weights_A.pt"))
-            lora_B = torch.load(os.path.join(path, "lora_weights_B.pt"))
+            lora_A = torch.load(os.path.join(path, "lora_weights_A.pt"), map_location="cpu")
+            lora_B = torch.load(os.path.join(path, "lora_weights_B.pt"), map_location="cpu")
             ## Loading LoRA weights for LLaMA-2
             ## Loading LoRA weights for LLaMA-2
             for j in range(config.num_hidden_layers):
@@ -569,7 +586,7 @@ def main():
         previous_lora_distribution_list.reverse()
         print(previous_lora_distribution_list)
         print("----------Loading Previous LoRA Distribution----------")
-        local_rank=torch.distributed.get_rank()
+        distribution_device = training_args.device
         for i, path in enumerate(previous_lora_distribution_list):
             with open(os.path.join(path,"lora_distribution.pkl"), 'rb') as file:
                 distribution = pickle.load(file)
@@ -579,20 +596,20 @@ def main():
                 old_distribution_q=distribution[f'layers.{j}.task.{(cur_task_id-i-1)%15}.q']
                 old_distribution_v=distribution[f'layers.{j}.task.{(cur_task_id-i-1)%15}.v']
 
-                old_distribution_q.mean=old_distribution_q.mean.to(f'cuda:{local_rank}')
-                old_distribution_q.var=old_distribution_q.var.to(f'cuda:{local_rank}')
+                old_distribution_q.mean=old_distribution_q.mean.to(distribution_device)
+                old_distribution_q.var=old_distribution_q.var.to(distribution_device)
 
-                old_distribution_v.mean=old_distribution_v.mean.to(f'cuda:{local_rank}')
-                old_distribution_v.var=old_distribution_v.var.to(f'cuda:{local_rank}')
+                old_distribution_v.mean=old_distribution_v.mean.to(distribution_device)
+                old_distribution_v.var=old_distribution_v.var.to(distribution_device)
 
                 model.model.layers[j].self_attn.previous_lora_distribution_q[i]=copy.deepcopy(old_distribution_q)
                 model.model.layers[j].self_attn.previous_lora_distribution_v[i]=copy.deepcopy(old_distribution_v)
     
     
     if not training_args.do_train:
-        local_rank=torch.distributed.get_rank()
-        lora_A = torch.load(os.path.join(training_args.output_dir,'saved_weights', "lora_weights_A.pt"))
-        lora_B = torch.load(os.path.join(training_args.output_dir,'saved_weights', "lora_weights_B.pt"))
+        distribution_device = training_args.device
+        lora_A = torch.load(os.path.join(training_args.output_dir,'saved_weights', "lora_weights_A.pt"), map_location="cpu")
+        lora_B = torch.load(os.path.join(training_args.output_dir,'saved_weights', "lora_weights_B.pt"), map_location="cpu")
 
         with open(os.path.join(training_args.output_dir,'saved_weights','lora_distribution.pkl'), 'rb') as file:
             distribution = pickle.load(file)
@@ -614,11 +631,11 @@ def main():
             old_distribution_q=distribution[f'layers.{j}.task.{cur_task_id}.q']
             old_distribution_v=distribution[f'layers.{j}.task.{cur_task_id}.v']
 
-            old_distribution_q.mean=old_distribution_q.mean.to(f'cuda:{local_rank}')
-            old_distribution_q.var=old_distribution_q.var.to(f'cuda:{local_rank}')
+            old_distribution_q.mean=old_distribution_q.mean.to(distribution_device)
+            old_distribution_q.var=old_distribution_q.var.to(distribution_device)
 
-            old_distribution_v.mean=old_distribution_v.mean.to(f'cuda:{local_rank}')
-            old_distribution_v.var=old_distribution_v.var.to(f'cuda:{local_rank}')
+            old_distribution_v.mean=old_distribution_v.mean.to(distribution_device)
+            old_distribution_v.var=old_distribution_v.var.to(distribution_device)
 
             model.model.layers[j].self_attn.distribution_q=copy.deepcopy(old_distribution_q)
             model.model.layers[j].self_attn.distribution_v=copy.deepcopy(old_distribution_v)
@@ -731,6 +748,7 @@ def main():
         return result
     print(f"-----Gradient checkpointing: {training_args.gradient_checkpointing} -----")
     if training_args.gradient_checkpointing:
+        model.config.use_cache = False
         model.gradient_checkpointing_enable()
 
     world_size = int(os.environ.get("WORLD_SIZE", 1))
@@ -812,24 +830,6 @@ def main():
         print("*** Prediction ***")
         logger.info("*** Prediction ***")
         logger.info("*** Loading CheckPoint ***")
-
-        model.model.is_inference = True
-        _ = trainer.predict(
-            predict_dataset,
-            metric_key_prefix="predict",
-            max_new_tokens=max_new_tokens,
-            num_beams=num_beams,
-            repetition_penalty=repetition_penalty,
-            pad_token_id=tokenizer.pad_token_id
-        )
-        model.model.is_inference = False
-
-        if world_size > 1:
-            rank = torch.distributed.get_rank()
-            is_main_process = rank == 0
-        else:
-            is_main_process = 1
-
 
         model.model.is_inference = True
         predict_results = trainer.predict(
