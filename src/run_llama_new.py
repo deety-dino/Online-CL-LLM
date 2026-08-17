@@ -525,6 +525,10 @@ def main():
         'flash_attention':model_args.flash_attention,
         'successor':model_args.successor
     }
+    # Transformers 4.30 rejects low_cpu_mem_usage when ZeRO-3 is active.
+    # ZeRO-3 performs its own parameter partitioning, so let it control model
+    # initialization in the distributed path.
+    use_low_cpu_mem_usage = training_args.deepspeed is None
     model = LlamaForCausalLM.from_pretrained(
         model_args.model_name_or_path,
         prompt_config,
@@ -535,7 +539,7 @@ def main():
         use_auth_token=True if model_args.use_auth_token else None,
         use_safetensors=True,
         torch_dtype=torch.float16 if training_args.fp16 else torch.float32,
-        low_cpu_mem_usage=True,
+        low_cpu_mem_usage=use_low_cpu_mem_usage,
     )
     model.config.use_cache = False
     
